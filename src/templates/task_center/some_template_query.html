@@ -1,0 +1,83 @@
+# coding=utf-8
+
+<%inherit file="some_template.html" />
+<%block name='head'>
+    ${parent.head()}
+</%block>
+<%block name='template_content'>
+<style type="text/css">
+    .btn{
+        border-radius: 4px;
+    }
+</style>
+    <table class="table table-bordered table-condensed table-striped mt5 tab_tx_c">
+        <thead>
+        <tr class="backcolor_common tr">
+            <th min-width='100'>步骤名称</th>
+            <th width='60'>序号</th>
+            <th min-width='100'>操作事项</th>
+            <th min-width='100'>备注</th>
+            % if h_flag and not audit_flag:
+                <th width='125'>完成时间</th>
+            % endif
+            <th width='90'>责任人</th>
+            % if h_flag and not audit_flag:
+                <th width='90'>确认人</th>
+                <th width='40'>状态</th>
+            % endif
+        </tr>
+        </thead>
+        <tbody>
+
+            % for key in parm_info:
+                <tr>
+                    <%
+                        colspan = len(key[1])
+                        operate_attention = key[1][0]['operate_attention']
+                        comment = key[1][0]['comment']
+                    %>
+                    <td rowspan="${colspan|h}">${key[0]|h}</td>
+                    <td style="${'text-decoration:line-through;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"删除" else ''}${'color:red;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"新增" else ''}${'color:blue;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"编辑" else ''}${'background-color:Orange;' if key[1][0].has_key('importance') and key[1][0]['importance']==1 else ''}">${key[1][0]['step_xh']|h}</td>
+                    <td style="text-align: left; ${'text-decoration:line-through;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"删除" else ''} ${'color:red;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"新增" else ''}${'color:blue;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"编辑" else ''}${'background-color:Orange;' if key[1][0].has_key('importance') and key[1][0]['importance']==1 else ''}">${operate_attention|h}</td>
+                    <td style="text-align: left; ${'text-decoration:line-through;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"删除" else ''} ${'color:red;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"新增" else ''}${'color:blue;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"编辑" else ''}${'background-color:Orange;' if key[1][0].has_key('importance') and key[1][0]['importance']==1 else ''}">${comment}
+                     % if h_flag and not audit_flag:
+                    <font color="red"> ${key[1][0]["confirm_info"]}</font>
+                    % endif
+                    </td>
+                    % if h_flag and not audit_flag:
+                        <td style="${'text-decoration:line-through;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"删除" else ''}${'color:red;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"新增" else ''}${'color:blue;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"编辑" else ''}${'background-color:Orange;' if key[1][0].has_key('importance') and key[1][0]['importance']==1 else ''}">${key[1][0]['done_time'] if key[1][0]['operation'] else ''|h}</td>
+                    % endif
+                    <td style="${'text-decoration:line-through;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"删除" else ''} ${'color:red;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"新增" else ''}${'color:blue;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"编辑" else ''}${'background-color:Orange;' if key[1][0].has_key('importance') and key[1][0]['importance']==1 else ''}">${key[1][0]['responser']|h}</td>
+                    % if h_flag and not audit_flag:
+                        <td style="${'text-decoration:line-through;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"删除" else ''} ${'color:red;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"新增" else ''}${'color:blue;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"编辑" else ''}${'background-color:Orange;' if key[1][0].has_key('importance') and key[1][0]['importance']==1 else ''}">${key[1][0]['confirm_user']}</td>
+                        <td style="${'text-decoration:line-through;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"删除" else ''}${'color:red;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"新增" else ''}${'color:blue;' if key[1][0].has_key('stat') and key[1][0]['stat']==u"编辑" else ''}${'background-color:Orange;' if key[1][0].has_key('importance') and key[1][0]['importance']==1 else ''}">${key[1][0]['operation']|h}</td>
+                    % endif
+                </tr>
+                % for j in range(1,colspan):
+                    <%
+                        operate_attention = key[1][j]['operate_attention']
+                        comment = key[1][j]['comment']
+
+                    %>
+                    <tr>
+                        <td style="${'text-decoration:line-through;' if key[1][j]['stat']==u"删除" else ''}${'color:red;' if key[1][j]['stat']==u"新增" else ''}${'color:blue;' if key[1][j]['stat']==u'编辑' else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]['step_xh']|h}</td>
+                        <td style="text-align: left;${'text-decoration:line-through;' if key[1][j]['stat']==u"删除" else ''} ${'color:red;' if key[1][j]['stat']==u"新增" else ''}${'color:blue;' if key[1][j]['stat']==u'编辑' else ''}${'color:blue;' if key[1][j]['stat']==u'编辑' else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${operate_attention|h}</td>
+                        <td style="text-align: left;${'text-decoration:line-through;' if key[1][j]['stat']==u"删除" else ''} ${'color:red;' if key[1][j]['stat']==u"新增" else ''}${'color:blue;' if key[1][j]['stat']==u'编辑' else ''}${'color:blue;' if key[1][j]['stat']==3 else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${comment}
+                         % if h_flag and not audit_flag:
+                    <font color="red"> ${key[1][0]["confirm_info"]}</font>
+                    % endif
+                    </td>
+                        % if h_flag and not audit_flag:
+                            <td style="${'text-decoration:line-through;' if key[1][j]['stat']==u"删除" else ''} ${'color:blue;' if key[1][j]['stat']==u'编辑' else ''}${'color:red;' if key[1][j]['stat']==u"新增" else ''}${'color:blue;' if key[1][j]['stat']==3 else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]['done_time'] if key[1][j]['operation'] else ''|h}</td>
+                        % endif
+                        <td style="${'text-decoration:line-through;' if key[1][j]['stat']==u"删除" else ''} ${'color:red;' if key[1][j]['stat']==u"新增" else ''}${'color:blue;' if key[1][j]['stat']==u'编辑' else ''}${'color:blue;' if key[1][j]['stat']==3 else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]['responser']|h}</td>
+                        % if h_flag and not audit_flag:
+                            <td style="${'text-decoration:line-through;' if key[1][j]['stat']==u"删除" else ''} ${'color:blue;' if key[1][j]['stat']==u'编辑' else ''}${'color:red;' if key[1][j]['stat']==u"新增" else ''}${'color:blue;' if key[1][j]['stat']==u"编辑" else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]['confirm_user']}</td>
+                            <td style="${'text-decoration:line-through;' if key[1][j]['stat']==u"删除" else ''} ${'color:blue;' if key[1][j]['stat']==u'编辑' else ''}${'color:red;' if key[1][j]['stat']==u"新增" else ''}${'color:blue;' if key[1][j]['stat']==u"编辑" else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]['operation']|h}</td>
+                        % endif
+                    </tr>
+                % endfor
+            % endfor
+        </tbody>
+    </table>
+</%block>

@@ -1,0 +1,532 @@
+<%inherit file="../base.html"/>
+<%block name='head'>
+    ${parent.head()|h}
+</%block>
+    <%block name='content'> 
+  <body style="min-width:1100px">
+  <div id="pop_edit" class="modal fade" >
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true" >&times;</button>
+      <h3 class="modal-title">创建任务实例</h3>
+    </div>
+    <div class="modal-body">
+      <div class="form-horizontal">
+      <div class="form-group">
+      <div class="control-label col-sm-3">
+        <label  for="edit_business_name">业务名称</label>
+      </div>
+      <div class="col-sm-7" >
+        <input type="hidden" id="hide_business_name">
+        <input class="form-control modal_input" id="edit_business_name" name="edit_business_name"  readonly>
+      </div>
+      </div>
+      <div class="form-group">
+      <div class="control-label col-sm-3">
+        <label for="task_type">模板类型</label>
+        </div>
+        <div class="col-sm-7">
+          <input class="form-control modal_input" id="task_type" name="version"  onblur="check_version(this)" disabled>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="control-label col-sm-3">
+        <label  for="edit_template_name">模板名称</label>
+        </div>
+        <div class="col-sm-7">
+          <input class="form-control modal_input" id="edit_template_name" name="edit_template_name" readonly>
+        </div>
+      </div>
+      <div class="form-group" id="version_div">
+        <div class="control-label col-sm-3">
+        <label for="version">操作识别号</label>
+        </div>
+        <div class="col-sm-7">
+          <input class="form-control modal_input" id="version" name="version" onblur="check_version(this)">
+        </div>
+        <span class="text-danger mt5 fl">*</span>
+      </div>
+        <div class="form-group">
+        <div class="control-label col-sm-3">
+        <label >模板可操作者</label>
+        </div>
+        <div class="col-sm-7">
+          <input name="template_operator"  id="template_operator" rows="3"
+              class="modal_input form-control"  multiple='true' hideicon="true"
+               placeholder="请用;分隔" readonly/>
+        </div>
+      </div>
+        <div class="form-group">
+        <div class="control-label col-sm-3">
+        <label for="audit_user">审核人</label>
+        </div>
+        <div class="col-sm-7">
+          <select name="audit_user"  id="audit_user" rows="3" class="t_l k-input"  multiple='true' hideicon="true"></select>
+        </div>
+        <span class="text-danger mt5 fl">*</span>
+      </div>
+      <div class="form-group">
+                <div class="control-label col-sm-3"></div>
+                <div class="col-sm-7" style="height:31px">
+                <p class="message_m" name="state_m" style="width:320px;color:red;"></p>
+              </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer t_c">
+      <button class="king-btn king-primary king-btn" id="save_businessInfo">创建</button>
+      <button class="king-btn king-default king-btn" id="hide_model"  data-dismiss="modal" aria-hidden="true" >取消</button>
+    </div>
+    </div>
+    </div>
+  </div>
+	  <div class="container-fluid">
+	  	  <div class="alert-success pg10 mt10 mb10">		
+			% if not flag or flag == 2:
+				<span class="dis_inb mr5">业务名称:</span>
+				<span>${template['business_name']|h}</span>
+				<span class="dis_inb ml20 mr5">模板类型:</span>
+				<span>${template['business_type']}</span>
+				<span class="dis_inb ml20 mr5">模板名称:</span>
+				<span>${template['template_name']}</span>
+				<div class="pull-right"> 
+					% if template['operator'].find(request.user.username)>=0:
+					<a class="king-btn king-success king-btn-small" onclick="edit_business('${template['business_name']}', '${template['business_name']}', '${template['template_name']}', '${template['business_type']}', '${template['operator']}') " data-toggle="modal" ><i class="glyphicon glyphicon-plus-sign"></i> 创建任务</a>
+					<a class="king-btn king-warning king-btn-small " id="bat_edit_operator_btn" data-toggle="modal" ><i class="glyphicon glyphicon-wrench"></i> 模版可操作者修改</a>
+					<a class="king-btn king-danger king-btn-small " id="bat_edit_responser_btn" data-toggle="modal" ><i class="glyphicon glyphicon-wrench"></i> 批量修改责任人</a>
+					% endif
+					<a class="king-btn king-primary king-btn-small" href="${ SITE_URL }edit/template_download/?business_name=${template['business_name']|h}&template_name=${template['template_name']|h}&flag=${flag|h}"><i class="glyphicon glyphicon-download-alt"></i> 下载</a>
+					<a class="king-btn king-default king-btn-small" menu="back" href="javascript:;" onclick="location.href='${SITE_URL}edit/'"><i class="glyphicon glyphicon-arrow-left"></i> 返回</a>
+				</div>
+			% else:
+				<span class="dis_inb mr10">任务实例名称:</span>
+
+				<span>${template['business_name']}</span>
+				<span class="dis_inb ml20 mr5">模板类型:</span>
+				<span>${template['business_type']|h}</span>
+				<span class="dis_inb ml20 mr5">操作识别号:</span>
+				<span>${template['business_version']|h}</span>
+				<div class="pull-right">
+ 				% if audit_flag:
+ 					% if template['status'] == u'待审核':
+						<a class="king-btn king-danger king-btn-small" data-target="#set_status"onclick="set_status_color()" data-toggle="modal"><i class="glyphicon glyphicon-wrench"></i> 审核</a>
+					% endif
+				% endif
+ 				<a class="king-btn king-primary king-btn-small" href="${ SITE_URL }edit/template_download/?business_name=${template['name']|h}&template_name=${template['template_name']|h}&flag=${flag|h}" ><i class="glyphicon glyphicon-download-alt"></i> 下载</a>
+ 					<a class="king-btn king-default king-btn-small" menu="back" href="javascript:;" onclick="location.href='${SITE_URL}'"><i class="glyphicon glyphicon-arrow-left"></i> 返回</a>
+				</div>
+				% if audit_flag:
+                    <span class="dis_inb mr10 ml30">审核状态:</span>
+					<span id="show_status" style="${'color:red;' if template['status'] == u'驳回' else ''}">${template['status']|h}</span>
+ 				% endif
+				<div class="t_br t_l">
+		            <span>说明:下面表格中，<font color="red">红色字体</font>代表新增步骤序号、<font style="text-decoration:line-through;">有删除线的</font>代表已经删除的步骤序号、<font color="blue">蓝色字体</font>代表修改过、<font color="orange">橙色背景</font>代表重要步骤；</span>
+		        </div>
+			% endif
+		  </div>
+		  <div style="margin-bottom:80px;">
+	  	  	<%block name='template_content'></%block>
+		  </div>
+	  </div>
+      <div id="set_status" class="modal fade">
+      		<div class="modal-dialog">
+    		<div class="modal-content">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		    <h3 class="modal-title">任务审核</h3>
+		  </div>
+		  <div class="modal-body">
+		    <div class="form-horizontal">
+		    	<div class="form-group">
+					<label class="control-label col-sm-3" for="radio_input-3">审核状态</label>
+					<div class="col-sm-7">
+					<div style="margin-top:3px">
+		                <label>
+		                    <input tabindex="3" type="radio" id="radio_input-3" name="iCheck" checked="" value="1"><span style="cursor:pointer">&nbsp;&nbsp;审核通过</span></label><label>&nbsp;&nbsp;</label>
+		                <label>
+		                    <input tabindex="3" type="radio" id="radio_input-4" name="iCheck" value="2"><span style="cursor:pointer">&nbsp;&nbsp;驳回</span></label>
+		            </div>
+					</div>
+				</div>
+			    <div class="form-group">
+					<label class="control-label col-sm-3"  for="audit_reason">审核原因</label>
+					<div class="col-sm-7">
+						<textarea id="audit_reason" class="form-control" style="">同意</textarea>
+					</div>
+					<span class="text-danger mt5 fl">*</span>
+				</div>
+				<div class="form-group">
+                    <div class="control-label col-sm-3"></div>
+                    <div class="col-sm-7" style="height:31px">
+		              <p class="message_m" name="state_m" style="width:320px;color:red;"></p>
+		            </div>
+	            </div>
+			</div>
+		  </div>
+		  <div class="modal-footer t_c">
+		    <button class="king-btn king-primary king-btn" id="save_checkInfo" onclick="pass_task()">审核</button>
+		    <button class="king-btn king-default king-btn" id="hide_model"  data-dismiss="modal" aria-hidden="true">取消</button>
+		  </div>
+		</div>
+		</div></div>
+
+		<div id="bat_edit_operator" class="modal fade">
+		  <div class="modal-dialog">
+    	<div class="modal-content">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		    <h3 class="modal-title">模版可操作者修改</h3>
+		  </div>
+		  <div class="modal-body">
+		    <div class="form-horizontal">
+		    	<p class="alert">注意事项: 此处修改的可操作者将影响后续模版及任务的操作权限，操作时请慎重！</p>
+		    	<div class="form-group">
+		    		<div class="control-label col-sm-3">
+					<label  for="bat_responser">可操作者</label>
+					</div>
+					<div class="col-sm-7">
+						<select name="responser"  id="bat_operator" class=" k-input"
+							 onchooser_blur="myBlur(target,data);" multiple="true"
+							 hideicon="true"></select>
+					</div>
+					<span class="text-danger mt5 fl">*</span>
+				</div>
+				<div class="form-group">
+                    <div class="control-label col-sm-3"></div>
+                    <div class="col-sm-7" style="height:31px">
+		              <p class="message_m" name="state_m" style="width:320px;color:red;"></p>
+		            </div>
+	            </div>
+			</div>
+		  </div>
+		  <div class="modal-footer t_c">
+		    <button class="king-btn king-primary king-btn" id="save_edit_operator" onclick="bat_edit_operator()">修改</button>
+		    <button class="king-btn king-default king-btn" id="hide_responser_model"  data-dismiss="modal" aria-hidden="true">取消</button>
+		  </div>
+		</div>
+		</div>
+		</div>
+
+
+		<div id="bat_edit_responser" class="modal fade">
+		  <div class="modal-dialog">
+    	<div class="modal-content">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		    <h3 class="modal-title">批量修改责任人</h3>
+		  </div>
+		  <div class="modal-body">
+		    <div class="form-horizontal">
+		    	<p class="alert">注意事项: 此处修改的责任人，将替换整个模板中所有步骤的责任人，操作时请慎重！</p>
+		    	<div class="form-group">
+		    		<div class="control-label col-sm-3">
+					<label  for="bat_responser">责任人</label>
+					</div>
+					<div class="col-sm-7">
+						<select name="responser"  id="bat_responser" class=" k-input"
+							 onchooser_blur="myBlur(target,data);" multiple="true"
+							 hideicon="true"></select>
+					</div>
+					<span class="text-danger mt5 fl">*</span>
+				</div>
+				<div class="form-group">
+                    <div class="control-label col-sm-3"></div>
+                    <div class="col-sm-7" style="height:31px">
+		              <p class="message_m" name="state_m" style="width:320px;color:red;"></p>
+		            </div>
+	            </div>
+			</div>
+		  </div>
+		  <div class="modal-footer t_c">
+		    <button class="king-btn king-primary king-btn" id="save_edit_responser" onclick="bat_edit_responser()">修改</button>
+		    <button class="king-btn king-default king-btn" id="hide_responser_model"  data-dismiss="modal" aria-hidden="true">取消</button>
+		  </div>
+		</div>
+		</div>
+		</div>
+      <script type="text/javascript">
+      $('input').iCheck({
+        radioClass: 'iradio_minimal-grey',
+      });
+      //人员选择器
+		$.post("${SITE_URL}users/",
+			{'csrfmiddlewaretoken': getCookie('csrftoken'),
+			 'cc_name': '${template["business_name"]}'
+		},
+			function(data){
+				data = JSON.parse(data);
+				$("#bat_responser").select2({
+     				data: data,
+     				width:300
+    			});
+    			$("#bat_operator").select2({
+     				data: data,
+     				width:300
+    			});
+    		}
+		);
+		$('input[name="iCheck"]').on('ifClicked', function (event) {
+			message = {'1':'同意', '2': '不同意'};
+			var tag = event.currentTarget.value;
+			if (event.currentTarget.checked){
+				if (tag=='1'){
+					tag = '2';
+				}else{
+					tag = '1'
+				}
+			};
+			$('#audit_reason').val(message[tag]);
+		});
+		function set_status_color(){
+			$('#audit_reason').val('同意');
+			$('.message_m').text('');
+			document.getElementById('audit_reason').style.borderColor="#aaa";
+		}
+      	function pass_task(){
+      		$('.message_m').text('');
+      		var audit_reason = $('#audit_reason').val();
+      		var status = $("input[name='iCheck']:checked")[0].value;
+      		document.getElementById('audit_reason').style.borderColor="#aaa";
+      		var url = site_url + 'history/status_set/';
+      		if (!audit_reason){
+      			document.getElementById('audit_reason').style.borderColor="red";
+      			$('.message_m').text("请填写审核原因");
+      			return;
+      		}
+      		var json_data = {
+	  					'business_name':'${template["name"]}',
+	  					'template_name':'${template["template_name"]}',
+	  					'status': status,
+	  					'audit_reason':audit_reason,
+	  					'csrfmiddlewaretoken': getCookie('csrftoken')
+	  				};
+      		if(status){
+      			$.post(
+			        url,
+			        json_data,
+			        function(data){
+						if(data.result){
+                            //#TODO
+	  						show_msg(danger_filter(data.msg),2);
+	  						location.href='${SITE_URL}';
+	  					}else{
+	  						$('.message_m').text(danger_filter(data.msg));
+	  					}
+	  					return false;
+		             });
+      		}else{
+      			$('.message_m').text('请选择审核状态！');
+      			return false;
+      		}
+      	};
+      	function nav_tab(str){
+      		window.location = str;
+      		return false;
+      	}
+      	$("#bat_edit_responser_btn").click(function(){
+      		$(".message_m").text('');
+          $('#bat_responser').siblings('.select2').find('.select2-selection').css('border-color','#aaa');
+      		$("#bat_responser").val('').trigger('change');
+      		$("#bat_edit_responser").modal({backdrop: 'static', keyboard: false});
+      	})
+      	$("#bat_edit_operator_btn").click(function(){
+      		$.post('${SITE_URL}edit/operator_get/',
+	      		{'template_name': '${template["template_name"]}',
+	      		 'business_name': '${template["business_name"]}',
+	      		 'csrfmiddlewaretoken': getCookie('csrftoken')
+	      		},
+	      		function(data){
+	      			if (data.result){
+	      				$('#bat_operator').val(data.data.split(';')).trigger('change');
+                $('#bat_operator').siblings('.select2').find('.select2-selection').css('border-color','#aaa');
+	      			}
+	      		})
+          
+      		$(".message_m").text('');
+      		$("#bat_edit_operator").modal({backdrop: 'static', keyboard: false});
+      	})
+      	function bat_edit_responser(){
+      		var responser = $('#bat_responser').val();
+      		if(!responser){
+      			$(".message_m").text('请输入修改后的责任人！');
+            $('#bat_responser').siblings('.select2').find('.select2-selection').css('border-color','red');
+      			return false;
+      		}else{
+      			responser=responser.join(';');
+      		}
+  			$.post(site_url+'edit/responser_change/',
+  				{
+  					'responser':responser,
+  					'business_name':'${template["business_name"]}',
+  					'template_name':'${template["template_name"]}',
+  					'csrfmiddlewaretoken': getCookie('csrftoken')
+  				},
+  				function(data){
+  					if(data.result){
+  						show_msg('批量修改责任人成功！',2);
+  						$('#hide_responser_model').click();
+  						if (document.getElementsByClassName('tr')[0].children.length==5){
+  							nav_tab('${SITE_URL}template/details/?business_name=${template["business_name"]}&flag=2&template_name=${template["template_name"]}')
+  						}else{
+  						nav_tab('${SITE_URL}edit/template_change/?business_name=${template["business_name"]}&flag=2&template_name=${template["template_name"]}')
+  						};
+  					}else{
+  						$(".message_m").text(data.msg);
+  					}
+  					
+  				},
+  			'json');
+      		return false;
+      	}
+
+      	function bat_edit_operator(){
+      		var operator = $('#bat_operator').val();
+      		if(!operator){
+      			$(".message_m").text('请输入可操作者！');
+            $('#bat_operator').siblings('.select2').find('.select2-selection').css('border-color','red');
+      			return false;
+      		}else{
+      			operator=operator.join(';');
+      		}
+  			$.post(site_url+'edit/operator_change/',
+  				{
+  					'operator':operator,
+  					'business_name':'${template["business_name"]}',
+  					'template_name':'${template["template_name"]}',
+  					'csrfmiddlewaretoken': getCookie('csrftoken')
+  				},
+  				function(data){
+  					if(data.result){
+  						show_msg('修改可操作者成功！',2);
+  						$('#hide_responser_model').click();
+  					}else{
+  						$(".message_m").text(data.msg);
+  						return false;
+  					}
+  					
+  				},
+  			'json');
+      		return false;
+      	}
+
+      	function check_version(obj){
+   $('.message_m').text('');
+        var version = $(obj).val();
+        if (version==''){
+            return;
+         }
+        $('.message_m').text('');
+        $.post('${SITE_URL}task/check_version/',
+          {
+            'business_name':$('#edit_business_name').val(),
+            'template_name':$('#edit_template_name').val(),
+            'version':version,
+            'csrfmiddlewaretoken': getCookie('csrftoken')
+          },
+          function(data){
+            if(!data.result){
+              $('#version_div').addClass('error');
+              $('.message_m').text('抱歉，您输入的操作识别号已经存在！');
+              $('#save_businessInfo').attr('disabled','true');
+            }else{
+              $('#version_div').removeClass('error');
+              $('#save_businessInfo').removeAttr('disabled');
+            }
+          }
+        ,'json');
+        return false;
+      }
+      function edit_business(business_name,name,template_name,task_type,operator){
+        $("#audit_user").select2({
+                ajax: {
+                    url: "${SITE_URL}users/",
+                    dataType: 'json',
+                    type: 'POST',
+                    data: function(params){
+                        return {
+                            'cc_name': business_name,
+                            'q': params.term,
+                            'csrfmiddlewaretoken': getCookie('csrftoken')
+                            }
+                    },
+                    //对返回的数据进行处理
+                    processResults: function (data, params) {
+                        return {results: data};
+                    },
+                },
+                placeholder: "选择审核人",
+                width:320,
+            });
+        $('#hide_business_name').val(name);
+        $('#edit_business_name').val(danger_filter(business_name));
+        $('#edit_template_name').val(danger_filter(template_name));
+        $('#version').val(null);
+        if(version=='null')
+          version = '';
+        $('#template_operator').attr('value',danger_filter(operator));
+        $('#task_type').attr('value',danger_filter(task_type));
+        $('#audit_user').val('null').trigger('change');
+        document.getElementById('version').style.borderColor="#aaa";
+        document.getElementById('audit_user').style.borderColor="#aaa";
+        $(".message_m").text('');
+        $('#audit_user').siblings('.select2').find('.select2-selection').css('border-color','#aaa');
+        $('#pop_edit').modal({backdrop: 'static', keyboard: false});
+      }
+      
+
+      $('#save_businessInfo').click(function(){
+        document.getElementById('version').style.borderColor="#aaa";
+        $('#audit_user').siblings('.select2').find('.select2-selection').css('border-color','#aaa');
+        var edit_business_name = $('#hide_business_name').val();
+        var task_type = $('#task_type').val();
+        var version = $('#version').val().replace(/\s/g,'');
+        var template_operator = $('#template_operator').val();
+        var template_name = $('#edit_template_name').val();
+        var audit_user = $('#audit_user').val();
+        audit_user = (audit_user!=null)?audit_user.join(';'):audit_user;
+        var pattern = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\]<>/?~！@#￥……&*（）——|{}【】‘；：”“’。，、？]");
+                flag=pattern.test(version);
+                if(flag){
+                    $('.message_m').text('操作识别号包含非法字符，请修改！');
+                }else{
+          if(version){
+            if(audit_user){
+              $.post(site_url+'task/business_create/',
+                {
+                  'business_name':edit_business_name,
+                  'task_type':task_type,
+                  'template_name':template_name,
+                  'version':version,
+                  'template_operator':template_operator,
+                  'audit_user':audit_user,
+                  'csrfmiddlewaretoken': getCookie('csrftoken')
+                },
+                function(data){
+                  if(data.result){
+                    show_msg(danger_filter(data.msg),2);
+                    var data = '${SITE_URL}history/business_change/?business_name='+edit_business_name+'_'+version+'&flag=1&template_name='+template_name;
+                    location.href=data;
+                    $('#hide_model').click();
+                    return false;
+                  }else{
+                    $('.message_m').text(danger_filter(data.msg));
+                  }
+                  return false;
+                },
+              'json');
+            }else{
+              $('.message_m').text('请填写审核人！');
+              $('#audit_user').siblings('.select2').find('.select2-selection').css('border-color','red');
+              document.getElementById('audit_user').style.borderColor="red";
+            }
+          }else{
+            document.getElementById('version').style.borderColor="red";
+            $('.message_m').text('请填写操作识别号！');
+          }
+        }
+      });
+
+
+      </script>
+</%block>

@@ -1,0 +1,342 @@
+<%inherit file="../base.html"/>
+    <%block name='head'>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        ${parent.head()}
+    </%block>
+    <%block name='content'> 
+    <style>
+    .select2-dropdown,.select2-container--default .select2-selection--multiple {
+        border-radius: 0px;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice{
+        border-radius: 0px;
+    }
+    .select2-container .select2-selection--multiple{
+        border-radius: 0px;
+        min-height: 35px;
+    }
+    .select2-container--default .select2-selection--single{
+        min-height: 35px
+    }
+    .file-input.file-input-new{
+        width:530px;
+    }
+</style>
+    <body>
+        <div id="show_template_table" class="modal fade" >
+          <div class="modal-dialog" style="width: 95%;">
+            <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" >&times;</button>
+                <h3 id="h_title modal-title">模版预览</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizontal">
+                    <div class="control-group">
+                    <table class="table table-striped table-bordered" id="strip_table" style="margin-top:10px">
+                        <tr>
+                            <th style="background-color: #d6ebf1;text-align: center;">步骤类别</th>
+                            <th style="background-color: #d6ebf1;text-align: center;">步骤序号</th>
+                            <th style="background-color: #d6ebf1;text-align: center;">操作事项</th>
+                            <th style="background-color: #d6ebf1;text-align: center;">备注</th>
+                            <th style="background-color: #d6ebf1;text-align: center;">责任人</th>
+                        </tr>
+                        <tbody id="template_tb">
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+        </div></div></div>
+        <div class="container-fluid">
+        <div class="well">
+            <div class="mb5 t_b t_s14"><span class="ml15">新建模版</span></div>
+            <div class="mb35">
+                <div class="f_l backcolor_blue pg0 mg0" style="height:2px; width:10%;"></div>
+                <div class="f_l" style="height:2px; width:90%; background-color:#dddddd"></div>
+            </div>
+            <div class="form-horizontal-large clearfix">
+                <div class="control-group label_center">
+                    <label class="col-sm-3 control-label" for="business_name" data-step="1" data-intro="选择想要新建模版的业务">业务名称</label>
+                    <div class="col-sm-7" >
+                        <select id="business_name" class="">
+                        </select>
+                    </div>
+                    <span class="text-danger mt5 fl">*</span>
+                </div>
+                <div class="control-group label_center">
+                    <label class="col-sm-3 control-label" for="business_kind" data-step="2" data-intro="选择对应的模版类型">模板类型</label>
+                    <div class="col-sm-7">
+                        <select id="business_kind" class="" >
+                        </select>
+                    </div>
+                    <span class="text-danger mt5 fl">*</span>
+                     <!-- <a id="add_type" class="king-btn-demo king-btn king-btn-icon king-default" style="margin-top: 2px;min-height:30px;max-height:30px" title="增加模版类型"><i class="glyphicon glyphicon-plus"></i></a> -->
+                </div>
+                <div class="control-group label_center">
+                    <label class="col-sm-3 control-label" for="template_name" data-step="3" data-intro="填写模版名称">模板名称</label>
+                    <div class="col-sm-7">
+                        <input type="text" id="template_name" class="business_name form-control" style="width: 530px;height:35px" name="template_name" />
+                    </div>
+                    <span class="text-danger mt5 fl">*</span>
+                </div>
+                <div class="control-group label_center">
+                    <label class="col-sm-3 control-label" data-step="4" data-intro="选择可操作者">模板可操作者</label>
+                    <div class="col-sm-7" >
+                        <select id="template_operator" name="operator" class="" multiple="multiple"></select>
+                    </div>
+                    <span class="text-danger mt5 fl">*</span>
+                </div>
+                <div class="control-group label_center">
+                    <label class="col-sm-3 control-label" for="template_import" data-step="5" data-intro="选择要导入的文件，文件格式参照参考文件，如上传失败请检查文件格式">选择导入模板</label>
+                    <div class="col-sm-7">
+                       <input  id="template_import" class="file" type="file" data-min-file-count="1" data-max-file-count="1" accept=".xlsx,.xls"  multiple>
+                        <p class="mt0">请选择要导入业务对应的模板文件，文件格式为*.xls或者*.xlsx ！</p>
+                        <p style="color: blue;" class="mt0"><a href="${SITE_URL}static/file/checklist.xls">模板参考文件下载</a></p>
+                        <p><span id="id_span_msg"></span></p>
+                    </div>
+                    <span class="text-danger mt5 fl">*</span>
+                </div>
+
+                <div class=" t_c">
+                    <button class="king-btn king-default" menu="back" href="javascript:;"onclick="location.href='${SITE_URL}edit/'">返回</button>
+                    <button class="king-btn king-default king-btn" onclick="show_template()" data-step="6" data-intro="此处可以预览上传成功的模版">模版预览</button>
+                    <button class="king-btn king-primary king-btn" onclick="submit_template()" data-step="7" data-intro="提交模版">确认提交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </body>
+    <script type="text/javascript">
+    // init select2
+     $("#business_kind").select2({
+        data: [],
+        placeholder: "选择模版类型",
+        cache: false,
+        width:530,
+    });
+    $("#business_name").select2({
+        data: [],
+        placeholder: "选择模版类型",
+        cache: false,
+        width:530,
+    });
+     $("#template_operator").select2({
+        data: [],
+        cache: false,
+        width:530,
+    });
+
+
+    var table_data=[];
+    //下拉模版名称
+    $.post("${SITE_URL}business_name/",
+    {'csrfmiddlewaretoken': getCookie('csrftoken')},
+        function(data){
+            data = JSON.parse(data);
+            data.shift();
+            $.post("${SITE_URL}business_type/",
+                {'cc_name': data[0]!=undefined && data[0].hasOwnProperty('id')?data[0]['id']:'',
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+                function(data){
+                    data = JSON.parse(data);
+                    data.shift();
+                    $("#business_kind").select2({
+                        data: data,
+                        placeholder: "选择模版类型",
+                        cache: false,
+                        width:530,
+                    });
+                }
+            );
+              //人员选择器
+            $.post("${SITE_URL}users/",
+                {cc_name: data[0]!=undefined && data[0].hasOwnProperty('id')?data[0]['id']:'',
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+                function(data){
+                    data = JSON.parse(data);
+                    $("#template_operator").select2({
+                        data: data,
+                        cache: false,
+                        width:530,
+                    });
+                    $('#template_operator').val('${user.username}').trigger("change");
+                }
+            );
+            $("#business_name").select2({
+                data: data,
+                placeholder: "选择模版名称",
+                cache: false,
+                width:530,
+            });
+        }
+    );
+    $("#business_name").on("select2:select", 
+        function (e) { 
+            $('#business_kind').val(null).trigger("change");
+             $("#business_kind").select2({
+                ajax: {
+                    url: "${SITE_URL}business_type/",
+                    dataType: 'json',
+                    type: 'POST',
+                    data: function(params){
+                        return {
+                            'cc_name': $('#business_name option:selected').text(),
+                            'q': params.term,
+                            'csrfmiddlewaretoken': getCookie('csrftoken')
+                            }
+                    },
+                    //对返回的数据进行处理
+                    processResults: function (data, params) {
+                        data.shift();
+                        return {results: data};
+                    },
+                },
+                placeholder: "选择模版类型",
+                width:530,
+                cache: false,
+            });
+              //人员选择器
+            $("#template_operator").select2({
+                ajax: {
+                    url: "${SITE_URL}users/",
+                    dataType: 'json',
+                    type: 'POST',
+                    data: function(params){
+                        return {
+                            'cc_name': $('#business_name option:selected').text(),
+                            'q': params.term,
+                            "csrfmiddlewaretoken": getCookie('csrftoken')
+                            }
+                    },
+                    //对返回的数据进行处理
+                    processResults: function (data, params) {
+                        return {results: data};
+                    },
+                },
+                placeholder: "选择可操作者",
+                cache: false,
+                width:530,
+            });
+            $('#template_operator').val('${user.username}').trigger("change");
+        });
+     // 模版预览
+     function draw_template(message, merge){
+        var content = '';
+        total = message.length;
+        step = 0;
+        while(step<total){
+            for(var i=0;i<merge.length;i++){
+                rowspan=merge[i]['rowspan'];
+                content+='<tr><td rowspan="'+rowspan+'">'+message[step]["step"]+'</td><td>'+message[step]["id"]+'</td><td>'+message[step]["operate_attention"]+'</td><td>'+message[step]["comment"]+'</td><td>'+message[step]["responser"]+'</td></tr>';
+                for(var j=1;j<rowspan;j++){
+                    content+='<tr><td>'+message[step+j]["id"]+'</td><td>'+message[step+j]["operate_attention"]+'</td><td>'+message[step+j]["comment"]+'</td><td>'+message[step+j]["responser"]+'</td></tr>';
+                }
+                step=step+rowspan;
+            }
+        }
+        document.getElementById("template_tb").innerHTML=content;
+     }
+     // 文件上传
+       $("#template_import").fileinput({
+      allowedFileExtensions : ['xls', 'xlsx'],
+      uploadUrl:'${SITE_URL}edit/file_import/',
+      maxFileSize: 100000,
+      maxFilesNum: 1,
+      showPreview : false,
+      showUpload: false,
+       showRemove: false,
+        uploadAsync: false,
+      language: 'zh',
+      uploadExtraData: function(){
+        return {"csrfmiddlewaretoken": getCookie('csrftoken')}
+    }
+    }).on('filebatchuploadsuccess', function(event, data, previewId, index) {
+      if(data.response.success)
+      {
+        draw_template(data.response.message, data.response.merge);
+        table_data=data.response.message;
+          show_msg("上传成功！", 2);
+          $('.kv-fileinput-caption').html(data.filenames);
+      }else{
+        table_data = [];
+        show_msg(data.response.message, 4);
+      }
+    });
+  $("#template_import").on('filebatchuploaderror', function(event, data, previewId, index) {
+    table_data = [];
+    show_msg("上传失败，请重试！", 4);
+  });
+      $("#template_import").on("filebatchselected", function(event, files) {
+        $('.kv-fileinput-caption').text(files.name);
+        // trigger upload method immediately after files are selected
+        table_data = [];
+        $('.kv-fileinput-caption').html('');
+        $("#template_import").fileinput("upload");
+    });
+    //模版预览
+    function show_template(){
+        if (table_data.length>0){
+                $('#show_template_table').modal({backdrop: 'static', keyboard: false});
+            }else{
+                show_msg('请上传模版!', 4);
+            }
+    }
+    $('#file_upload-queue').addClass('hide');
+     function submit_template() {
+        document.getElementById('template_name').style.borderColor="#aaa";
+        document.getElementById('template_operator').style.borderColor="";
+        document.getElementsByClassName("kv-fileinput-caption")[0].style="";
+        if ($('#business_name option:selected').text()) {
+            if ($('#template_name').val().trim()) {
+                var template_name=$('#template_name').val().replace(/\s/g,'');
+                var pattern = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\].<>/?~！@#￥……&*（）&;|{}【】‘；：”“'。，、？]");
+                flag=pattern.test(template_name);
+                if(flag){
+                show_msg('模板名称包含非法字符，请修改！', 4);
+                document.getElementById('template_name').style.borderColor="red";
+                }else{
+                     if (table_data.length>0){
+                        operator=$('#template_operator').val();
+                        if(operator){
+                            $.post(site_url + 'edit/template_save/',
+                                {
+                                    'business_name': $('#business_name option:selected').text(),
+                                    'operator': (operator!=null)?operator=operator.join(';'):operator,
+                                    'business_type': $('#business_kind option:selected').text(),
+                                    'template_name': template_name,
+                                    'template_data': JSON.stringify(table_data),
+                                    "csrfmiddlewaretoken": getCookie('csrftoken')
+                                },
+                                function (data) {
+                                    if (data.result) {
+                                        show_msg(danger_filter(data.message), 2);
+                                        top.location=site_url + 'edit/';
+                                    } else {
+                                        show_msg(danger_filter(data.message), 4);
+                                    }
+                                },
+                                'json');
+                        }else{
+                            document.getElementById('template_operator').style.borderColor="red";
+                        show_msg('请选择模版可操作者!', 4);
+                        }
+                    }else{
+                        document.getElementsByClassName("kv-fileinput-caption")[0].style="border-color:red"
+                        show_msg('请上传模版!', 4);
+                    }
+                }
+            } else {
+                document.getElementById('template_name').style.borderColor="red";
+                show_msg('请填写模板名称！', 4);
+            }
+        } else {
+            show_msg('请联系管理员，添加业务名称！', 4);
+        }
+        return false;
+    }
+
+    </script>
+</%block>

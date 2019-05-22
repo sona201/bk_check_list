@@ -1,0 +1,11 @@
+app_code: bk_check_list
+app_name: CheckList
+author: 蓝鲸智云
+!!python/unicode 'date': '2017-11-15 12:28:09'
+introduction: CheckList 是一款记录和确认流程步骤的产品，适用于步骤繁多，工作缜密（如发布流程）的场景，该应用提供了事件模版生成、完成项确认等小功能。
+is_use_celery: false
+!!python/unicode 'language': python
+libraries:
+- name: kombu
+  version: 3.0.35
+version: 1.0.4

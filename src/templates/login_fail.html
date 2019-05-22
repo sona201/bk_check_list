@@ -1,0 +1,50 @@
+<%inherit file="/base.html"/>
+
+<%block name='head'>
+	<title>即将转入蓝鲸登录...</title>
+	${parent.head()}
+</%block>
+
+<%block name="content">
+<style>
+body{background-color:#CDCDC1;font-family:"Microsoft YaHei"}
+.t_big{font-size:32px;color:#4C4229}
+.t_mid{font-size:14px;color:#7D7449}
+.t_small{color:#838D82}
+.border_all {
+	background-color:#E1E2DC;width:40%;min-height:300px;min-width:600px;margin:0 auto;border-radius: 35px;
+}
+</style>
+<div class="container"  style="width:80%;height:60%;margin-top:8%;">
+	<div class="border_all">
+		<div class="t_b ml50 pt30 t_big">蓝鲸平台登录失败！</div>
+		<div class="ml50 pt30 t_b t_mid">可能原因：</div>
+		<p class="ml50 pt15 t_b t_mid">1、OA登录验证失败；</p>
+		<p class="ml50 t_b t_mid">2、用户信息不存在。</p>
+		<div class='' style="padding-top:0px;">
+		    <a class='label label-warning f_r t_s14' style="background-color: #483E0B;padding:10px 10px 10px 10px;margin-right:80px" style="border-radius:0px" onclick='jump_now()'>重 新 登 录</a></p>
+	    </div>
+	</div>
+</div>
+<script type="text/javascript">
+	$(document).ready(function () {
+		//count_down()
+	});
+
+	var cd_sec = 10;
+	function count_down(){
+		$('#cd_sec').html(cd_sec)
+		cd_sec += -1
+		if(cd_sec < 0){
+			cd_sec = 5;
+			jump_now();
+		}
+		setTimeout('count_down()', 1000)
+	}
+
+	function jump_now(){
+	   //window.top.location.reload()
+	   window.location.href = '/accounts/logout/';
+	}
+</script>
+</%block>

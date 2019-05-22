@@ -1,0 +1,75 @@
+<%inherit file="../base.html"/>
+    <%block name='content'> 
+  <body style="min-width:100%">
+	   <div id="up_modal" class="modal fade" >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" >&times;</button>
+            <h4 id="" class="modal-title">提示</h4>
+          </div>
+          <div class="modal-body">
+           <div class="mb20 mt30" style="margin-top:5px;" align="center">
+            确认提交?
+              </div>
+          </div>
+          <div class="modal-footer t_c">
+              <button class="king-btn king-primary" id="up_confirm" group_id="">确定</button>
+              <button class=" king-btn king-default" id="hide_model_m"  data-dismiss="modal" aria-hidden="true">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+	  <div class="container-fluid" style="min-width:1100px">
+	  	  <div class="alert-success pg10 mt10 mb10">
+			<span class="dis_inb mr5">业务名称:</span>
+			<span>${template["business_name"].rstrip(u'_'+template["business_version"])|h}</span>
+			<span class="dis_inb ml20 mr5">模板类型:</span>
+			<span>${template["business_type"]|h}</span>
+			<span class="dis_inb ml20 mr5">模板名称:</span>
+			<span class="mr5">${template["template_name"]|h}</span>
+			<span class="dis_inb ml20 mr5">操作识别号:</span>
+			<span id="zany_version" class="mr50">${template["business_version"]|h}</span>
+       <div class="pull-right">
+      % if template["submit_status"]==0:
+        <button class="king-btn king-primary king-btn-small" onclick="confirm_submit()"><i class="glyphicon glyphicon-check"></i> 提交</button>
+      % endif
+      <button class="king-btn king-default king-btn-small" onclick="javascript:window.location.reload(true)"><i class="glyphicon glyphicon-refresh"></i> 刷新</button>
+       <button class="king-btn king-default king-btn-small" id="close_frame" menu="back" href="javascript:;" onclick="location.href='${SITE_URL}'"><i class="glyphicon glyphicon-arrow-left"></i> 返回</button>
+      </div>
+      % if template["status"]==u'驳回':
+      <div class="t_br t_l">
+          <span class="dis_inb mr5">驳回原因:</span>
+          <span class="t_red">${template["audit_reason"]|h}</span>
+      </div>
+      % endif
+        <div class="t_br t_l">
+            <span>说明:下面表格中，<font color="red">红色字体</font>代表新增步骤序号、<font style="text-decoration:line-through;">有删除线的</font>代表已经删除的步骤序号、<font color="blue">蓝色字体</font>代表修改过、<font color="orange">橙色背景</font>代表重要步骤；</span>
+        </div>
+		  </div>
+	  	  <%block name='template_content'></%block>
+      </div>
+      
+      <script type="text/javascript">
+      	function confirm_submit(){
+      		var audit_user = '${template["audit_user"]}';
+      		var json_data = {
+      				'audit_user':audit_user,
+      				'business_name':'${template["name"]}',
+      				'template_name':'${template["template_name"]}',
+              'csrfmiddlewaretoken': getCookie('csrftoken'),
+      			};
+      	$("#up_modal").modal({backdrop: 'static', keyboard: false});
+            $("#up_confirm").click(function(){
+     				$.post(site_url+'history/change_stat/',	json_data,
+           			function(data){
+           				## show_msg(data.msg,2);
+    		      		<!--$('#close_frame').click();-->
+    		      		top.location.href='${SITE_URL}';
+          				return false;
+           			},
+    	      		'json');
+    			});
+      	}
+      </script>
+ </%block>

@@ -1,0 +1,46 @@
+<%inherit file="../base.html"/>
+<%block name='head'>
+	${parent.head()|h}
+</%block>
+    <%block name='content'> 
+    	<div class="alert">
+                <h4>帮助文档</h4>
+                <br/>
+                <strong style="margin-left: 37px;">任务中心</strong>
+                <br/>
+            	<p style="margin-left: 67px;">
+	            	<span>在这里可以看到有操作权限的业务下的所有任务。</span><br/>
+	            	<span>没有操作权限的任务只能查看，有操作权限的任务可以对它进行一系列操作。</span><br/>
+	            	<span>任务具有5种状态：</span><br/>
+	            	<p style="margin-left:97px">
+		            	<span>任务完成：该任务已完成，可以查看任务记录</span><br/>
+		            	<span>任务废弃：该任务已被废弃，可以查看任务记录</span><br/>
+		            	<span>操作中：该任务正在进行操作，点击继续对任务步骤进行标记</span><br/>
+		            	<span>等待审核：任务需要提交审核才能被审核人审核。审核人在创建任务时勾选，点击继续按钮可以进入提交审核页面。审核人点击审核按钮可以对任务进行审核。</span><br/>
+		            	<span>审核驳回：审核人驳回该任务，点击继续查看驳回原因并对任务进行相应修改。</span><br/>
+		            </p>
+            	</p>
+            	<br/>
+            	<strong style="margin-left: 37px;">任务模版</strong>
+                <br/>
+            	<p style="margin-left: 67px;">
+	            	<span>	在这里可以看到有操作权限的业务下的所有模版，并可以对有操作权限的模版进行新建、修改、删除操作,并根据模版创建对应的任务实例。</span><br/>
+	            	<span>重要操作解释：</span><br/>
+	            	<p style="margin-left:97px">
+		            	<span>新建模版：点击右上角新增按钮进入新建模版页面，上传模版excel（具体格式可以参考模版参考文件）</span><br/>
+		            	<span>修改模版：可以修改模版内的详细内容或标记重要步骤。</span><br/>
+		            	<span>创建任务实例：输入操作识别号（用于区分同一模版的不同任务），选择审核人进行创建。</span>
+		            </p>
+            	</p>
+            	<strong style="margin-left: 37px;">角色说明</strong>
+                <br/>
+            	<p style="margin-left: 67px;">
+	            	<span>用户分为两种角色：</span><br/>
+	            	<p style="margin-left:97px">
+		            	<span>普通用户：可以进入任务中心和任务模版页面</span><br/>
+		            	<span>管理员：管理员可以进入管理页面，添加业务，修改业务下的模版类型。</span><br/>
+		            	<span style="color:red">注：管理员与平台管理员一致</span>
+		            </p>
+            	</p>
+        </div>
+</%block>

@@ -1,0 +1,6 @@
+*.pyc
+*.py~
+*.html~
+conf
+.idea
+1.8

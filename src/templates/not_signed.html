@@ -1,0 +1,46 @@
+<%inherit file="/base.html"/>
+
+<%block name='head'>
+	<title>即将转入OA登录...</title>
+	${parent.head()}
+</%block>
+
+<%block name="content">
+		<div class='hero-unit'>
+				<h1>您需要登录到OA</h1>
+				<p>可能是如下原因之一:</p>
+				<ul>
+					<li>您还没有登录OA</li>
+					<li>您之前的登录已经失效了</li>
+				</ul>
+				<div class='alert alert-info'>
+				<p><span id='cd_sec' class='badge badge-warning'></span><span>秒后自动跳转到登录页面.</span></p>
+				<a class='btn' onclick='jump_now()'>立即跳转</a>
+				</div>
+		</div>
+
+		<script type="text/javascript">
+			$(document).ready(function () {
+				count_down()
+			});
+
+			var cd_sec = 5;
+			function count_down(){
+				$('#cd_sec').html(cd_sec)
+				cd_sec += -1
+				if(cd_sec < 0){
+					jump_now()
+				}
+				setTimeout('count_down()', 1000)
+			}
+
+			function jump_now(){
+				if(app_code){
+					window.top.location = 'http://' + window.top.location.host + '/?app='+app_code
+				}
+				else{
+					window.top.location.reload();
+				}
+			}
+		</script>
+</%block>

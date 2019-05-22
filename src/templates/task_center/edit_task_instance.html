@@ -1,0 +1,380 @@
+# coding=utf-8
+<%inherit file="business_task.html" />
+<%block name='head'>
+<link href="/static/favicon.ico" rel="Shortcut Icon">
+    ${parent.head()|h}
+</%block>
+<%block name='template_content'>
+<div id="cont" style="display: inline-block;width: 100%">
+        <table class="table table-bordered table-condensed table-striped tab_tx_c">
+            <thead>
+            <tr class="backcolor_common">
+                <th min-width='100'>步骤名称</th>
+                <th width='60'>序号</th>
+                <th min-width='100'>操作事项</th>
+                <th min-width='100'>备注</th>
+                <th width="80">负责人</th>
+                <th width="80">是否重要</th>
+                <th width="145">
+                    操作
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+                % for key in parm_data:
+                <tr class="${'line-through' if key[1][0]["stat"]==u'删除' else ''}">
+                    <td rowspan="${len(key[1])}" style="text-decoration: none !important" class="notline" >${key[0]|h}</td>
+                % for j in range(0,len(key[1])):
+                % if j!=0:
+                    <tr style="${'text-decoration: line-through' if key[1][j]['stat']==u'删除' else ''}">
+                % endif
+                    <td style="${'text-decoration:line-through;' if key[1][j]['stat']==u'删除' else ''}${'color:red;' if key[1][j]['stat']==u'新增' else ''}${'color:blue;' if key[1][j]['stat']==u'编辑' else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]['step_xh']|h}</td>
+                    <td style="text-align: left;${'text-decoration:line-through;' if key[1][j]['stat']==u'删除' else ''} ${'color:red;' if key[1][j]['stat']==u'新增' else ''}${'color:blue;' if key[1][j]['stat']==u'编辑' else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]["operate_attention"]|h}</td>
+                    <td style="text-align: left;${'text-decoration:line-through;' if key[1][j]['stat']==u'删除' else ''} ${'color:red;' if key[1][j]['stat']==u'新增' else ''}${'color:blue;' if key[1][j]['stat']==u'编辑' else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]["comment"]|h}</td>
+                    <td style="${'text-decoration:line-through;' if key[1][j]['stat']==u'删除' else ''} ${'color:red;' if key[1][j]['stat']==u'新增' else ''}${'color:blue;' if key[1][j]['stat']==u'编辑' else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]['responser']|h}</td>
+                    <td style="">
+                        % if key[1][j]["stat"]==u'删除':
+
+                        % elif key[1][j]['importance']:
+                            <input type="checkbox" checked="checked"/></td>
+                        % else:
+                            <input type="checkbox"/></td>
+                        % endif
+                    <td style="">
+                        % if key[1][j]["stat"]==u'删除':
+                            已删除
+                        % else:
+                           <a class="king-btn-demo king-btn king-btn-icon king-default" data-toggle="modal" onclick="fill_step(this)" title="编辑"><i class="glyphicon glyphicon-edit"></i></a>
+                        <a class="king-btn-demo king-btn king-btn-icon king-default" data-toggle="modal" onclick="add_step(this)" title="增加"><i class="glyphicon glyphicon-plus"></i></a>
+                        <button class="king-btn-demo king-btn king-btn-icon king-default" onclick="delete_step(this)" title="删除"><i class="glyphicon glyphicon-remove"></i></button>
+                        % endif
+                    </td>
+                </tr>
+                % endfor
+                % endfor
+            </tbody>
+        </table>
+    </div>
+ <script type="text/javascript">
+            $(function(){
+                $('tr').each(function (index) {
+                        if($(this).children('td').length==7){
+                                $(this).children('td:first').css("text-decoration","none")
+                        }
+                });
+           })
+        </script>
+    <div class="container">
+        <div id="edit" class="modal fade" style="display:none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <a class="close" data-dismiss="modal">&times;</a>
+                <h3 class="modal-title">编辑步骤</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" for="step_xh">步骤序号</label>
+                        <div class="col-sm-7">
+                            <input class="modal_input form-control " id="step_xh" value="" name="step_xh" readonly = "readonly">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label"  for="operate_attention">操作事项</label>
+                        <div class="col-sm-7" >
+                            <textarea class="form-control modal_input" id="operate_attention" name="operate_attention" rows="4"></textarea>
+                        </div>
+                        <span class="text-danger mt5 fl">*</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" for="comment">备注</label>
+                        <div class="col-sm-7" >
+                            <textarea class="form-control modal_input" id="comment" name="comment" rows="4"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" for="principal">责任人</label>
+                        <div class="col-sm-7" >
+                            <select name="principal" id="principal" class="form-control col-sm-7" value="" multiple="multiple"></select>
+                        </div>
+                        <span class="text-danger mt5 fl">*</span>
+                    </div>
+                    <div class="form-group">
+                        <div class="control-label col-sm-3"></div>
+                        <div class="col-sm-7" style="height:31px">
+                          <p class="message_m" name="state_m" style="width:320px;color:red;"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer t_c">
+                <button class="king-btn king-primary king-btn" onclick="save_update('edit')">更新</button>
+                <button class="king-btn king-default king-btn" data-dismiss="modal"  >关闭</button>
+            </div>
+        </div>
+        </div>
+        </div>
+    </div>
+
+    <div id="add" class="modal fade">
+    <div class="modal-dialog">
+            <div class="modal-content">
+        <div class="modal-header">
+            <a class="close" data-dismiss="modal">&times;</a>
+            <h3 class="modal-title">添加步骤</h3>
+        </div>
+        <div class="modal-body">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="step_xh_create">步骤序号</label>
+                    <div class="col-sm-7">
+                        <input class="modal_input form-control " id="step_xh_create" name="step_xh_create"
+                               readonly = "readonly">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="operate_attention_create">操作事项</label>
+                    <div class="col-sm-7">
+                        <textarea class="form-control modal_input" id="operate_attention_create" name="operate_attention_create" rows="4"></textarea>
+                    </div>
+                    <span class="text-danger mt5 fl">*</span>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="comment_create">备注</label>
+                    <div class="col-sm-7">
+                        <textarea class="form-control modal_input" id="comment_create" name="comment_create" rows="4"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="principal_create">责任人</label>
+                    <div class="col-sm-7">
+                        <select name="principal_create" id="principal_create" class=" k-input"multiple="multiple"></select>
+                    </div>
+                    <span class="text-danger mt5 fl">*</span>
+                </div>
+                <div class="form-group">
+                    <div class="control-label col-sm-3"></div>
+                    <div class="col-sm-7" style="height:31px">
+                      <p class="message_m" name="state_m" style="width:320px;color:red;"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer t_c">
+            <button class="king-btn king-primary king-btn" onclick="save_update('create')">保存</button>
+            <button class="king-btn king-default king-btn" data-dismiss="modal" >关闭</button>
+        </div>
+        </div>
+        </div>
+    </div>
+    <div id="delete_modal" class="modal fade" >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" >&times;</button>
+            <h4 id="" class="modal-title">提示</h4>
+          </div>
+          <div class="modal-body">
+           <div class="mb20 mt30" style="margin-top:5px;" align="center">
+            你确定删除该步骤吗？
+              </div>
+          </div>
+          <div class="modal-footer t_c">
+              <button class="king-btn king-primary" id="delete_confirm" group_id="">确定</button>
+              <button class=" king-btn king-default" id="hide_model_m"  data-dismiss="modal" aria-hidden="true">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+        //checkbox
+        $('input').iCheck({
+            checkboxClass: 'icheckbox_minimal-grey',
+          });
+        //人员选择器
+        $.post("${SITE_URL}users/",
+        {'csrfmiddlewaretoken': getCookie('csrftoken')},
+            function(data){
+                data = JSON.parse(data);
+                $("#principal").select2({
+                    data: data,
+                    width:320,
+                });
+                $("#principal_create").select2({
+                    data: data,
+                    width:320,
+                });
+            }
+        );
+        function delete_step(t) {
+            var step_xh = danger_filter($(t).parent().siblings().eq(-5).text());
+            $("#delete_modal").modal({backdrop: 'static', keyboard: false});
+            $("#delete_confirm").click(function(){
+                $.post(site_url + 'template/step_delete/',
+                        {
+                            'business_name': '${template["name"]}',
+                            'template_name': '${template["template_name"]}',
+                            'step_xh': step_xh,
+                            'instance_flag': 'true',
+                            'csrfmiddlewaretoken': getCookie('csrftoken')
+                        },
+                        function (data) {
+                            if (data.result) {
+                                show_msg(danger_filter(data.msg), 2);
+                                window.location.reload(true);
+                            } else {
+                                show_msg(danger_filter(data.msg), 4);
+                            }
+                        },
+                        'json');
+                return false;
+            })
+        }
+        function fill_step(t) {
+            var trs = $(t).parent().siblings();
+            $("#step_xh").val(danger_filter(trs.eq(-5).text()));
+            $("#operate_attention").val(danger_filter(trs.eq(-4).text()));
+            $("#comment").val(danger_filter(trs.eq(-3).text()));
+            $("#principal").val(danger_filter(trs.eq(-2).text()).split(';')).trigger("change");
+            document.getElementById('principal').style.borderColor="#aaa";
+            document.getElementById('operate_attention').style.borderColor="#aaa";
+            $(".message_m").text('');
+            $("#edit").modal({backdrop: 'static', keyboard: false});
+        }
+        function save_update(flag) {
+            if (flag == 'edit') {
+                var step_xh = $('#step_xh').val();
+                var operate_attention = $('#operate_attention').val();
+                var comment = $('#comment').val();
+                var principal = $('#principal').val();
+                document.getElementById('principal').style.borderColor="#aaa";
+                document.getElementById('operate_attention').style.borderColor="#aaa";
+                principal=(principal!=null)?principal.join(';'):principal;
+                if (!principal){
+                    $(".message_m").text('请选择责任人！');
+                    document.getElementById('principal').style.borderColor="red";
+                    return;
+                }
+                if (operate_attention) {
+                    $.post(site_url + 'template/step_change/',
+                            {
+                                'business_name': '${template["name"]}',
+                                'template_name': '${template["template_name"]}',
+                                'step_xh': step_xh,
+                                'operate_attention': operate_attention,
+                                'comment': comment,
+                                'responser': principal,
+                                'instance_flag': 'true',
+                                "csrfmiddlewaretoken": getCookie('csrftoken')
+                            },
+                            function (reg) {
+                                if (reg.result) {
+                                    show_msg(danger_filter(reg.msg), 2);
+                                    window.location.reload(true);
+                                } else {
+                                    $(".message_m").text(danger_filter(reg.msg));
+
+                                }
+                                return false;
+                            },
+                            'json');
+                } else {
+                    document.getElementById('operate_attention').style.borderColor="red";
+                    $(".message_m").text('请输入操作事项！');
+                }
+            } else {
+                var step_xh = $('#step_xh_create').val();
+                var operate_attention = $('#operate_attention_create').val();
+                operate_attention = operate_attention.replace(/\r\n/g, '<br>');
+                var comment = $('#comment_create').val();
+                comment = comment.replace(/\r\n/g, '<br>');
+                var principal = $('#principal_create').val();
+                 principal=(principal!=null)?principal.join(';'):principal;
+                 document.getElementById('principal_create').style.borderColor="#aaa";
+                document.getElementById('operate_attention_create').style.borderColor="#aaa";
+                if (!principal){
+                    $(".message_m").text('请选择责任人！');
+                    document.getElementById('principal_create').style.borderColor="red";
+                    return;
+                }
+                if (step_xh) {
+                    if(operate_attention){
+                        $.post(site_url + 'template/step_create/',
+                            {
+                                'business_name': '${template["name"]}',
+                                'template_name': '${template["template_name"]}',
+                                'step_xh': step_xh,
+                                'operate_attention': operate_attention,
+                                'comment': comment,
+                                'responser': principal,
+                                'instance_flag': 'true',
+                                "csrfmiddlewaretoken": getCookie('csrftoken')
+                            },
+                            function (reg) {
+                                if (reg.result) {
+                                    show_msg(danger_filter(reg.msg), 2);
+                                    window.location.reload(true);
+                                } else {
+                                    $(".message_m").text(danger_filter(reg.msg));
+                                }
+                                return false;
+                            },
+                            'json');
+                    }else{
+                        $(".message_m").text('请输入操作事项！');
+                        document.getElementById('operate_attention_create').style.borderColor="red";
+                    }
+                } else {
+                    $(".message_m").text('请输入步骤序号！');
+                }
+            }
+        }
+        function add_step(t) {
+            var trs = $(t).parent().siblings();
+            $('.message_m').text('');
+            $("#step_xh_create").val(trs.eq(-5).text());
+            $("#principal_create").val(trs.eq(-2).text().split(';')).trigger('change');
+            document.getElementById('principal_create').style.borderColor="#aaa";
+            document.getElementById('operate_attention_create').style.borderColor="#aaa";
+            $("#add").modal({backdrop: 'static', keyboard: false});
+        }
+        function check_import(t,obj,importance) {
+            var parent_this = t;
+            $.post(site_url + 'template/step_import/',
+                    {
+                        'business_name': '${template["name"]}',
+                        'template_name': '${template["template_name"]}',
+                        'version': '${template["business_version"]}',
+                        'step_xh': obj,
+                        'importance': importance,
+                        'instance_flag': 'true',
+                        'csrfmiddlewaretoken': getCookie('csrftoken')
+                    },
+                    function (data) {
+                        if (data.result) {
+                            show_msg('状态已保存！', 2);
+                            if (parent_this.is(":checked")){
+                                parent_this.parent().parent().siblings().not(":last").slice(-4,5).css("background","orange");
+                            }
+                            else{
+                                parent_this.parent().parent().siblings().not(":last").slice(-4,5).css("background","white");
+                            }
+                            return true;
+                        } else {
+                            show_msg('标记重要步骤项失败！', 4);
+                        }
+                    }
+                    , 'json');
+        }
+        $(document).ready(function () {
+            $('input').on('ifChanged', function(event){
+                var t= $(event.currentTarget);
+                var xh = t.parent().parent().siblings().eq(-5).text();
+                check_import(t,xh,$(this).is(":checked"))
+
+            })
+        })
+    </script>
+</%block>

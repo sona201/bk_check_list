@@ -1,0 +1,378 @@
+#coding=utf-8
+<%inherit file='../base.html'/>
+<%block name='head'>
+${parent.head()}
+</%block>
+<%block name='grid_content'>
+<div id="delete_modal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 id="" class="modal-title">提示</h4>
+            </div>
+            <div class="modal-body">
+                <div class="mb20 mt30" style="margin-top:5px;" align="center">
+                    你确定废弃该任务吗?
+                </div>
+            </div>
+            <div class="modal-footer t_c">
+                <button class="king-btn king-primary" id="delete_confirm" group_id="">确定</button>
+                <button class=" king-btn king-default" id="hide_model_m" data-dismiss="modal" aria-hidden="true">取消
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid" style="position: relative;" id="body">
+    <div class="mb10 form-inline form-horizontal" style="min-width:100%">
+        <div style="padding-bottom:5px">
+            <input type="hidden" id='hide_business_name' value=""/>
+            <label for="business_name">业务名称：</label>
+            <select id="business_name" name="business_name" class="business_name"></select>
+            <label for="business_type" class="ml30">模板类型：</label>
+            <select id="business_type" name="business_type" class="business_name" readonly></select>
+            <label for="status" class="ml30">任务状态：</label>
+            <select id="status" name="status" class="business_name"></select>
+        </div>
+        <label for="creator"> &nbsp;&nbsp;&nbsp;创建人：</label>
+        <select type="text" id="creator" name="creator" multiple="multiple"></select>
+        <label for="template_name" class="ml30">模版名称：</label>
+        <input type="text" id="template_name" name="template_name" class="form-control business_name"
+               style="width:200px"/>
+        <label for="business_version" style="margin-left: 18px;">操作识别号：</label>
+        <input type="text" id="business_version" name="business_version" class="business_name form-control"
+               style="width:200px"/>
+        <button id="submit" class="king-btn king-default king-btn-small pull-right" style="margin-top:3px"><i
+                class="glyphicon glyphicon-search"></i> 查询
+        </button>
+
+        <table class="table table-striped table-bordered" id="table">
+            <thead>
+            <tr>
+                <th class="backcolor_common" style="text-align: center;min-width:10%">模板名称</th>
+                <th class="backcolor_common" style="text-align: center;min-width:12%" id="th_version" data-step="4"
+                    data-intro="用于区分同一模版的不同任务" data-position='left'> 操作识别号
+                </th>
+                <th class="backcolor_common" style="text-align: center;min-width:10%" id="example">业务名称</th>
+                <th class="backcolor_common" style="text-align: center;min-width:10%">模板类型</th>
+                <th class="backcolor_common" style="text-align: center;min-width:12%" id="th_operator" data-step="5"
+                    data-intro="拥有可操作者权限的用户可以对任务进行一系列操作，没有该权限的用户则只能查看该任务" data-position='left'>可操作者
+                </th>
+                <th class="backcolor_common" style="text-align: center;width:9%">创建者</th>
+                <th class="backcolor_common" style="text-align: center;width:13%">创建时间</th>
+                <th class="backcolor_common" style="text-align: center;width:9%">审核状态</th>
+                <th class="backcolor_common" style="text-align: center;width:9%" data-step="6"
+                    data-intro="可以在这里对任务进行查看、审核、继续和废弃等一系列操作" data-position='left'>操作
+                </th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+    var status = (parseInt($('#status').val()) >= 0) ? $('#status').val() : "";
+    var business_type = ($('#business_type').val() == null || $('#business_type').val() == "all") ? "" : $('#business_type').val();
+    var business_name = ($('#business_name').val() == null || $('#business_name').val() == "all") ? "" : $('#business_name').val();
+    var creator = $('#creator').val();
+    creator = (creator != null) ? creator.join(';') : creator;
+    var template_name = $('#template_name').val();
+    var business_version = $('#business_version').val();
+    // init select2
+
+    $("#creator").select2({
+        data: [],
+        width: 200,
+    });
+    $("#business_type").select2({
+        data: [],
+        placeholder: "选择模版类型",
+        width: 200
+    })
+    $("#business_name").select2({
+        data: [],
+        placeholder: "选择模版名称",
+        width: 200
+    });
+
+    $(function () {
+        $.post("${SITE_URL}users/",
+                {'csrfmiddlewaretoken': getCookie('csrftoken')},
+                function (data) {
+                    data = JSON.parse(data);
+                    $("#creator").select2({
+                        data: data,
+                        width: 200,
+                    });
+
+                }
+        );
+
+        //下拉任务状态
+        // $("iframe").height(window.screen.height-240);
+        var status_list = [
+            {text: "全部", id: -1},
+            {text: "等待审核", id: 0},
+            {text: "审核通过", id: 1},
+            {text: "任务驳回", id: 2},
+            {text: "操作中", id: 3},
+            {text: "任务完成", id: 4},
+            {text: "任务废弃", id: 5}]
+        $('#status').select2({
+            placeholder: "选择任务状态",
+            data: status_list,
+        });
+        //业务名下拉
+        $.post("${SITE_URL}business_name/",
+                {'csrfmiddlewaretoken': getCookie('csrftoken')},
+                function (data) {
+                    data = JSON.parse(data);
+                    $("#business_name").select2({
+                        data: data,
+                        placeholder: "选择模版名称",
+                        width: 200
+                    });
+                    $.post("${SITE_URL}business_type/",
+                            {
+                                'cc_name': data[0]['text'],
+                                'csrfmiddlewaretoken': getCookie('csrftoken')
+                            },
+                            function (types) {
+                                types = JSON.parse(types);
+                                $("#business_type").select2({
+                                    data: types,
+                                    placeholder: "选择模版类型",
+                                    width: 200
+                                })
+                            });
+                });
+        $("#business_name").on("select2:select",
+                function (e) {
+                    $("#business_type").select2().select2("destroy");
+                    $("#business_type option").remove();
+                    $("#business_type").select2({
+                        data: [{'id': 'all', 'text': '全部'}],
+                        width: 200
+                    });
+                    $("#business_type").select2({
+                        ajax: {
+                            url: "${SITE_URL}business_type/",
+                            dataType: 'json',
+                            type: 'post',
+                            data: function (params) {
+                                return {
+                                    'cc_name': $('#business_name option:selected').text(),
+                                    'q': params.term,
+                                    'csrfmiddlewaretoken': getCookie('csrftoken')
+                                }
+                            },
+                            //对返回的数据进行处理
+                            processResults: function (data, params) {
+                                if (params.term) {
+                                    data.shift();
+                                }
+                                return {results: data};
+                            },
+                        },
+                        placeholder: "选择模版类型",
+                        width: 200
+                    });
+                });
+
+    });
+
+    function fail_task(business_name, template_name) {
+        $("#delete_modal").modal({backdrop: 'static', keyboard: false});
+        $("#delete_confirm").click(function () {
+            audit_reason = 'delete';
+            var json_data = {
+                "business_name": business_name,
+                "template_name": template_name,
+                "status": 5,
+                "audit_reason": audit_reason,
+                "csrfmiddlewaretoken": getCookie('csrftoken')
+            }
+            var url = site_url + 'history/status_set/';
+            $.post(url, json_data, function (data) {
+                if (data.result)
+                    show_msg(danger_filter(data.msg), 2);
+                else
+                    show_msg(danger_filter(data.msg), 4);
+                $("#delete_modal").modal("hide");
+                $("#table").DataTable().ajax.reload(null, false);
+            }, 'json');
+            return false;
+        });
+    }
+
+    function encodeQueryData(data) {
+        var ret = [];
+        for (var d in data)
+            ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+        return ret.join('&');
+    }
+    // 查看/继续按钮
+    function command_some_template(business_name, obj) {
+        var query_data = encodeQueryData({"business_name":business_name});
+        location.href =  $(obj).attr("data") + "&"+ query_data;
+        return false;
+    }
+    // 分页控件
+    var language = {
+        search: '搜索：',
+        lengthMenu: "每页显示 _MENU_ 记录",
+        zeroRecords: "没找到相应的数据！",
+        info: "共_TOTAL_条记录, 当前第 _PAGE_/_PAGES_",
+        infoEmpty: "",
+        infoFiltered: "(从 _MAX_ 条数据中搜索)",
+        paginate: {
+            first: '<<',
+            last: '>>',
+            previous: '上一页',
+            next: '下一页',
+        }
+    };
+    function th_draw() {
+        $("#th_version").html('操作识别号 <i title="用于区分同一模版的不同任务" class="glyphicon glyphicon-question-sign"></i>')
+        $("#th_operator").html('可操作者 <i title="拥有该任务的操作权限" class="glyphicon glyphicon-question-sign"></i>')
+
+    }
+    $('#table').dataTable({
+        paging: true, //隐藏分页
+        ordering: true, //关闭排序
+        info: true, //隐藏左下角分页信息
+        searching: false, //关闭搜索
+        lengthChange: false, //不允许用户改变表格每页显示的记录数
+        language: language, //汉化
+        pageType: 'full_numbers', //右下角翻页样式
+        pageLength: 10, //每页显示行数
+        serverSide: true, //后端分页
+        order: [[6, 'desc']],
+        drawCallback: th_draw,
+        columnDefs: [{"orderable": false, "targets": 4}, {"orderable": false, "targets": 8}],
+        columns: [
+            {title: '模板名称', data: 'template_name'},
+            {title: '操作识别号', data: 'business_version'},
+            {title: '业务名称', data: 'business_name'},
+            {title: '模板类型', data: 'business_type'},
+            {title: '可操作者', data: 'operator'},
+            {title: '创建者', data: 'creator'},
+            {title: '创建时间', data: 'create_time'},
+            {
+                title: '审核状态', data: 'status', render: function (data) {
+                var status = '';
+                if (data == '待审核') {
+                    status = '<span class="label label-primary">等待审核</span>';
+                } else if (data == '审核通过') {
+                    status = '<span class="label label-success">审核通过</span>';
+                } else if (data == '驳回') {
+                    status = '<span class="label label-danger">任务驳回</span>';
+                } else if (data == '操作中') {
+                    status = '<span class="label label-warning">操作中</span>';
+                } else if (data == '完成') {
+                    status = '<span class="label label-default">任务完成</span>';
+                } else if (data == '废弃') {
+                    status = '<span class="label label-default">任务废弃</span>';
+                }
+                return '<div align="center">' + status + '</div>';
+            }
+            },
+            {
+                title: '操作', data: 'details',
+                render: function (data_list) {
+                    if ($.inArray('${request.user.username|h}', data_list['operator'].split(';')) < 0) {
+                        var operate = '<div><button type="right: 5px;" class="king-btn-demo king-btn king-btn-icon king-default" data="${SITE_URL}template/details/?flag=1&h_flag=1&template_name=' + data_list['template_name'] + '" onclick="command_some_template(' + "'" + data_list['name'] + "'" + ',this)" title="查看"><i class="glyphicon glyphicon-search"></i></button>';
+                        if (data_list['status'] == '待审核') {
+                            if (data_list['submit_status'] == 1) {
+                                if ($.inArray('${request.user.username|h}', data_list['audit_user'].split(';')) >= 0) {
+                                    operate = '<button class="king-btn-demo king-btn king-btn-icon king-default" style="position: relative;right: 5px;" data="${SITE_URL}template/details/?flag=1&h_flag=1&template_name=' + data_list['template_name'] + '" onclick="command_some_template(' + "'" + data_list['name'] + "'" + ',this)" title="查看"><i class="glyphicon glyphicon-eye-open"></i></button>' + '<button class="king-btn-demo king-btn king-btn-icon king-default" data="${SITE_URL}template/details/?flag=1&h_flag=1&audit_flag=1&template_name=' + data_list['template_name'] + '" onclick="command_some_template(' + "'" + data_list['name'] + "'" + ',this)" title="审核"><i class="glyphicon glyphicon-briefcase"></i></button>'
+                                }
+                            }
+                        }
+                    } else {
+                        if (data_list['status'] == '废弃') {
+                            var operate = '<button style="right: 5px;position: relative;" class="king-btn-demo king-btn king-btn-icon king-default" style="" data="${SITE_URL}template/details/?flag=1&h_flag=1&template_name=' + data_list['template_name'] + '" onclick="command_some_template(' + "'" + data_list['name'] + "'" + ',this)" title="查看"><i class="glyphicon glyphicon-eye-open"></i></button>';
+                        } else if (data_list['status'] == '完成') {
+                            var operate = '<button class="king-btn-demo king-btn king-btn-icon king-default" style=" position: relative;right: 5px;" data="${SITE_URL}template/details/?flag=1&h_flag=1&template_name=' + data_list['template_name'] + '" onclick="command_some_template(' + "'" + data_list['name'] + "'" + ',this)" title="查看"><i class="glyphicon glyphicon-eye-open"></i></button>';
+                        } else {
+                            var operate = '<button class="king-btn-demo king-btn king-btn-icon king-default" style=" position: relative;right: 5px;" data="${SITE_URL}template/details/?flag=1&h_flag=1&template_name=' + data_list['template_name'] + '" onclick="command_some_template(' + "'" + data_list['name'] + "'" + ',this)" title="查看"><i class="glyphicon glyphicon-eye-open"></i></button>';
+                        }
+                        if (data_list['status'] == '待审核') {
+                            if (data_list['submit_status'] == 1) {
+                                if ($.inArray('${request.user.username|h}', data_list['audit_user'].split(';')) >= 0) {
+                                    operate = operate + '<button class="king-btn-demo king-btn king-btn-icon king-default"style="" data="${SITE_URL}template/details/?flag=1&h_flag=1&audit_flag=1&template_name=' + data_list['template_name'] + '" onclick="command_some_template(' + "'" + data_list['name'] + "'" + ',this)" title="审核"><i class="glyphicon glyphicon-briefcase"></i></button><button class="king-btn-demo king-btn king-btn-icon king-default" style=" position: relative;left: 5px;"title="废弃" onclick="fail_task(' + "'" + data_list['name'] + "'" + ',' + "'" + data_list['template_name'] + "'" + ')" ><i class="glyphicon glyphicon-remove"></i></button>'
+                                } else {
+                                    operate += '<button class="king-btn-demo king-btn king-btn-icon king-default" style=" position: relative;" onclick="fail_task(' + "'" + data_list['name'] + "'" + ',' + "'" + data_list['template_name'] + "'" + ')" title="废弃"><i class="glyphicon glyphicon-remove"></i></button>'
+                                }
+                            } else {
+                                operate = operate + '<button class="king-btn-demo king-btn king-btn-icon king-default"style="" data="${SITE_URL}history/business_change/?' + "version=" + data_list['business_version'] + '&flag=1&template_name=' + data_list['template_name'] + '&status=' + data_list['status'] + '" onclick="command_some_template(' + "'" + data_list['name'] + "'" + ',this)" title="继续"><i class="glyphicon glyphicon-wrench"></i></button><button class="king-btn-demo king-btn king-btn-icon king-default" style=" position: relative;left: 5px;" onclick="fail_task(' + "'" + data_list['name'] + "'" + ',' + "'" + data_list['template_name'] + "'" + ')" title="废弃" ><i class="glyphicon glyphicon-remove"></i></button>'
+                            }
+
+                        } else if (data_list['status'] == '审核通过') {
+                            operate = operate + '<button class="king-btn-demo king-btn king-btn-icon king-default"  data="${SITE_URL}history/business_operate/?' + "version=" + data_list['business_version'] + '&template_name=' + data_list['template_name'] + '" onclick="command_some_template(' + "'" + data_list['name'] + "'" + ',this) " title="继续"><i class="glyphicon glyphicon-wrench"></i></button>';
+                        } else if (data_list['status'] == '驳回') {
+                            operate = operate + '<button class="king-btn-demo king-btn king-btn-icon king-default"style="" data="${SITE_URL}history/business_change/?flag=1&template_name=' + data_list['template_name'] + '&status=' + data_list['status'] + '" onclick="command_some_template(' + "'" + data_list['name'] + "'" + ',this)" title="继续"><i class="glyphicon glyphicon-wrench"></i></button>'
+                            operate = operate + '<button class="king-btn-demo king-btn king-btn-icon king-default" style=" position: relative;left: 5px;" onclick="fail_task(' + "'" + data_list['name'] + "'" + ',' + "'" + data_list['template_name'] + "'" + ')" title="废弃"><i class="glyphicon glyphicon-remove"></i></button>'
+                        } else if (data_list['status'] == '操作中') {
+                            operate = operate + '<button class="king-btn-demo king-btn king-btn-icon king-default"  data="${SITE_URL}history/business_operate/?' + "version=" + data_list['business_version'] + '&template_name=' + data_list['template_name'] + '" onclick="command_some_template(' + "'" + data_list['name'] + "'" + ',this) " title="继续"><i class="glyphicon glyphicon-wrench"></i></button>';
+                        }
+                    }
+                    return operate;
+                }
+            },
+        ],
+        ajax: function (data, callback, oSettings) {
+            var that = this;
+            var length = data.length;
+            var offset = data.start;
+            var order = data.columns[data.order[0].column].data;
+            var dir = data.order[0].dir;
+
+            $.ajax({
+                type: 'GET',
+                dataType: 'json',
+                url: site_url + 'history/business_query/',
+                data: {
+                    'length': length,
+                    'offset': offset,
+                    'business_type': business_type,
+                    'template_name': template_name,
+                    'status': status,
+                    'creator': creator,
+                    'business_version': business_version,
+                    'business_name': business_name,
+                    'order': order,
+                    'collation': dir
+                },
+                success: function (response) {
+                    if (that.current_draw == undefined) {
+                        that.current_draw = data.draw;
+                    }
+                    var json = {
+                        data: response.data,
+                        recordsTotal: response.total_count,
+                        draw: that.current_draw++,
+                        recordsFiltered: response.total_count
+                    }
+                    callback(json);//回调渲染
+                },
+                error: function (e) {
+                }
+            });
+        },
+    });
+
+
+    $('#submit').click(function () {
+        status = (parseInt($('#status').val()) >= 0) ? $('#status').val() : "";
+        business_type = ($('#business_type').val() == null || $('#business_type').val() == "all") ? "" : $('#business_type').val();
+        business_name = ($('#business_name').val() == null || $('#business_name').val() == "all") ? "" : $('#business_name').val();
+        creator = $('#creator').val();
+        creator = (creator != null) ? creator.join(';') : creator;
+        template_name = $('#template_name').val();
+        business_version = $('#business_version').val();
+        $('#table').DataTable().ajax.reload();
+    });
+
+</script>
+</%block>

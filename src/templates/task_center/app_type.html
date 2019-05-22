@@ -1,0 +1,300 @@
+<%inherit file="../base.html"/>
+<%block name='head'>
+    ${parent.head()|h}
+</%block>
+    <%block name='content'>
+    <div id="delete_modal" class="modal fade" >
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" >&times;</button>
+	        <h4 id="" class="modal-title">提示</h4>
+	      </div>
+	      <div class="modal-body">
+	       <div class="mb20 mt30" style="margin-top:5px;" align="center">
+	            你确定删除该业务类型吗?
+	          </div>
+	      </div>
+	      <div class="modal-footer t_c">
+	          <button class="king-btn king-primary" id="delete_confirm" group_id="">确定</button>
+	          <button class=" king-btn king-default" id="hide_model_m"  data-dismiss="modal" aria-hidden="true">取消</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	<div id="new_template_type" class="modal fade">
+          <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" >&times;</button>
+                    <h3 id="h_title" class="modal-title">新增模版类型</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="add_cc_name">业务名称</label>
+                            <div class="col-sm-7">
+                                <select class="modal_input form-control" id="add_cc_name" name="add_cc_name" rows="4" readonly></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="add_template_type">模版类型</label>
+                            <div class="col-sm-7" >
+                                <input class="modal_input form-control" id="add_template_type" name="add_template_type" rows="4">
+                            </div>
+                            <span class="text-danger mt5 fl">*</span>
+                        </div>
+                        <div class="form-group">
+                            <div class="control-label col-sm-3"></div>
+                            <div class="col-sm-7" style="height:31px">
+                              <p class="message_m" name="state_m" style="width:320px;color:red;"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer t_c">
+                    <button class="king-btn king-primary king-btn" id="save_templateType" type_id=''>确定</button>
+                    <button class="king-btn king-default king-btn" id="hide_model"  data-dismiss="modal" aria-hidden="true">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+	<div class="container-fluid" style="position: relative;">
+		<div class="form-inline form-horizontal">
+			<div style="padding-bottom:5px">
+				<label for="cc_name">业务名称：</label>
+				<select id="cc_name" type="text" id="creator" name="creator" class="business_name"></select>
+				<label for="template_type" class="ml30">类型名称：</label>
+				<input id="template_type" type="text" id="creator" name="creator" class="business_name" />
+				<div class="pull-right" style="margin-top:3px">
+					<button id="submit" class="king-btn king-default king-btn-small"><i class="glyphicon glyphicon-search"></i> 查询</button>
+					<button id="add_type" class="king-btn king-primary king-btn-small"><i class="glyphicon glyphicon-plus"></i> 新增</button>
+				</div>
+			</div>
+		</div>
+		<table class="table table-striped table-bordered" style="margin-top:10px" id="table">
+		    <thead>
+		        <tr class="backcolor_common">
+		            <th style="text-align: center;">业务名称</th>
+		            <th style="text-align: center;">模版名称</th>
+		            <th style="text-align: center;width:70px">操作</th>	            								
+		        </tr>
+		    </thead>
+		</table>
+	</div>
+<script type="text/javascript">
+  $("#cc_name").select2({
+      data: [],
+      placeholder: "选择业务名称",
+      width:200
+  });
+	$.post("${SITE_URL}business_name/",
+    	{'csrfmiddlewaretoken': getCookie('csrftoken'),
+      'is_staff': 1
+    },
+        function(data){
+            data = JSON.parse(data);
+            $("#cc_name").select2({
+                data: data,
+                placeholder: "选择业务名称",
+                width:200
+            });
+
+            data.shift();
+            $("#add_cc_name").select2({
+                data: data,
+                placeholder: "选择业务名称",
+                width:320
+            });
+        });
+
+	var cc_name = $('#cc_name').val();
+	var template_type = $('#template_type').val();
+	//分页
+	 var language = {
+      search: '搜索：',
+      lengthMenu: "每页显示 _MENU_ 记录",
+      zeroRecords: "没找到相应的数据！",
+      info: "共_TOTAL_条记录, 当前第 _PAGE_/_PAGES_",
+      infoEmpty: "分页 0 / 0",
+      infoFiltered: "(从 _MAX_ 条数据中搜索)",
+      paginate: {
+          first: '<<',
+          last: '>>',
+          previous: '上一页',
+          next: '下一页',
+      }
+    };
+    function drow_btn() {
+      $(".change_type").click(function(){
+        type_id = $(this).val();
+        document.getElementById("save_templateType").setAttribute("type_id", type_id);
+        $("#add_cc_name").val($(this).parents('tr')[0].children[0].textContent).trigger("change");
+        $("#add_template_type").val($(this).parents('tr')[0].children[1].textContent);
+        $('#add_cc_name').prop("disabled", true);
+        $(".message_m").text('');
+        $("#h_title").text('修改模版类型');
+        document.getElementById('add_template_type').style.borderColor="#aaa";
+        $('#new_template_type').modal({backdrop: 'static', keyboard: false});
+      })
+    $(".delete_type").click(function(){
+        var type_id = $(this).val();
+        $("#delete_modal").modal({backdrop: 'static', keyboard: false});
+        $("#delete_confirm").click(function(){
+        $.post(
+        '${SITE_URL}'+'app/type_delete/',
+        {
+          'id': type_id,
+          "csrfmiddlewaretoken": getCookie('csrftoken')
+        },              
+        function(data){
+          $("#delete_modal").modal("hide")
+          if(data.result){
+            show_msg("操作成功！", 2);
+            $('#table').DataTable().ajax.reload();
+          }else{
+            show_msg(danger_filter(data.message), 4);
+          }
+        });
+      });
+    })
+    }
+	$('#table').dataTable({
+      paging: true, //隐藏分页
+      ordering: true, //关闭排序
+      info: true, //隐藏左下角分页信息
+      searching: false, //关闭搜索
+      lengthChange: false, //不允许用户改变表格每页显示的记录数
+      language: language, //汉化
+      pageType: 'full_numbers', //右下角翻页样式
+      pageLength: 10, //每页显示行数
+      serverSide: true, //后端分页
+      order: [[0, 'desc']],
+      drawCallback: drow_btn,
+      columnDefs: [{ "orderable": false,"targets":2}],
+      columns : [
+        {title : '业务名称', data:'cc_name'}, 
+        {title : '模版类型', data: 'types'},           
+        {title : '操作', data: 'id',
+	        render: function(id){
+	        	var  content ='<div align="center"><button class="change_type king-btn-demo king-btn king-btn-icon king-default" style="margin-right: 5px;" value="' +id+'" title="编辑"><i class="glyphicon glyphicon-edit"></i></button>' + '<button class="delete_type king-btn-demo king-btn king-btn-icon king-default" value="'+id +'" title="删除"><i class="glyphicon glyphicon-remove"></i></button>';
+				return content;
+	        }
+    	}, 
+      ],
+      ajax: function(data, callback, oSettings){
+        var that = this;
+        var length = data.length;
+        var offset = data.start;
+        var order = data.columns[data.order[0].column].data;
+        var collation = data.order[0].dir;
+        $.ajax({
+          type: 'GET',
+          dataType: 'json',
+          url: site_url+'app/type_query/',
+          data: {
+				'length': length,
+				'offset': offset,
+				'cc_name': cc_name,
+				'template_type': template_type,
+				'order': order,
+				'collation': collation
+			},
+          success: function(response){
+            if (that.current_draw == undefined){
+              that.current_draw = data.draw;
+            }
+            var json = {
+              data:response.data,
+              recordsTotal: response.total_count,
+              draw: that.current_draw++,
+              recordsFiltered: response.total_count
+            }
+            callback(json);//回调渲染
+          },
+          error: function(e){
+          }
+        });
+      },
+    });
+	
+	$('#submit').click(function(){
+		cc_name = $('#cc_name').val();
+		template_type = $('#template_type').val();
+		$('#table').DataTable().ajax.reload();
+	});
+	// 增加模版类型
+    $("#add_type").click(function(){
+        document.getElementById("save_templateType").setAttribute("type_id", '');
+        $("#add_cc_name").val(null).trigger("change");
+        $("#add_template_type").val('');
+        $('#add_cc_name').prop("disabled", false);
+        $(".message_m").text('');
+        $("#h_title").text('新增模版类型');
+        $('#new_template_type').modal({backdrop: 'static', keyboard: false});
+    });
+    $("#save_templateType").click(function(){
+        var cc_name=$("#add_cc_name").val();
+        var template_type=$("#add_template_type").val();
+        template_type = template_type.replace(/\s+/g,"");   
+        var id=$(this).attr('type_id');
+        document.getElementById('add_template_type').style.borderColor="#aaa";
+        $('.message_m').text('');
+        if (!cc_name){
+    	 $('.message_m').text('请填写业务名称！');
+            document.getElementById('add_cc_name').style.borderColor="red";
+            return;
+        }
+        if (!template_type){
+            $('.message_m').text('请填写模版类型！');
+                document.getElementById('add_template_type').style.borderColor="red";
+                return;
+        }else{
+        	var pattern = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\]<>/?~！@#￥……&*（）——|{}【】‘；：”“’。，、？]");
+                flag=pattern.test(template_type);
+                if(flag){
+                    $('.message_m').text('模版类型包含非法字符，请修改！');
+                    return 
+                }
+               if (!id){
+	            $.post(
+	                "${SITE_URL}app/type_create/",
+	                {'cc_name': cc_name,
+	                 'template_type': template_type,
+	                 "csrfmiddlewaretoken": getCookie('csrftoken')
+	                },
+	                function(data){
+	                    if (data.result){
+	                        show_msg(danger_filter(data.msg), 2);
+	                        hide_model.click();
+							$('#new_template_type').modal('hide');
+							$('#table').DataTable().ajax.reload();
+						}else{
+	                        $('.message_m').text(danger_filter(data.msg));
+	                    }
+	                }
+	            );
+	        }else{
+	        		$.post(
+	                "${SITE_URL}app/type_change/",
+	                {'cc_name': cc_name,
+	                 'template_type': template_type,
+	                 'pk': id,
+	                 "csrfmiddlewaretoken": getCookie('csrftoken')
+	                },
+	                function(data){
+	                    if (data.result){
+	                        show_msg(danger_filter(data.msg), 2);
+	                        hide_model.click();
+							$('#new_template_type').modal('hide');
+							$('#table').DataTable().ajax.reload();
+						}else{
+	                        $('.message_m').text(danger_filter(data.msg));
+	                    }
+	                }
+	            );
+	        }
+    	}
+    });
+</script>
+</%block>

@@ -1,0 +1,20 @@
+<%inherit file="/base.html"/>
+
+<%block name='head'>
+	<title>蓝鲸应用开发模板</title>
+	${parent.head()}
+</%block>
+
+<%block name="content">
+	<style>
+		body {/**/min-width:980px; width:auto;height:600px;}
+	</style>
+	
+	<div class='alert'>
+		ffsession_key: ${session_key}<br>
+		ffticket     : ${ticket}<br>
+		ffusername   : ${username}<br>
+		ffffandy     : ${fandy}
+	</div>
+	
+</%block>

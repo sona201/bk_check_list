@@ -1,0 +1,412 @@
+<%inherit file="some_template.html" />
+<%block name='head'>
+    ${parent.head()|h}
+    <style type="text/css">
+    </style>
+</%block>
+<%block name='content'>
+    <div class="container-fluid" style="min-width:1100px">
+        <div class="alert-success pg10 mt10 mb10" style="width: 100%">
+            <span class="dis_inb mr5">业务名称:</span>
+            <span>${instance["business_name"].rstrip('_'+instance["business_version"])|h}</span>
+            <span class="dis_inb ml20 mr5">模板类型:</span>
+            <span>${instance["business_type"]|h}</span>
+            <span class="dis_inb ml20 mr5">模板名称:</span>
+            <span class="mr5">${instance["template_name"]|h}</span>
+            <span class="dis_inb ml20 mr5">操作识别号:</span>
+            <span id="zany_version" class="mr50">${instance["business_version"]|h}</span>
+            <div class="pull-right">
+            <a class="king-btn king-primary king-btn-small" menu="back" href="javascript:;" onclick="confirm_all('', false)"> <i class="glyphicon glyphicon-saved"></i> 批量确认</a>
+             <a class="king-btn king-default king-btn-small" menu="back" href="javascript:;" onclick="location.href='${SITE_URL}'"><i
+                    class="glyphicon glyphicon-arrow-left"></i> 返回</a>
+            </div>
+        </div>
+
+        <div id="cont" style="overflow: hidden;display: inline-block;width: 100%">
+            <table class="table table-bordered table-condensed table-striped tab_tx_c">
+                <thead>
+                <tr class="backcolor_common">
+                    <th style="width:15%">步骤名称</th>
+                    <th style="width:5%">序号</th>
+                    <th style="min-width:10%">操作事项</th>
+                    <th style="min-width:5%">备注</th>
+                    <th style="width:15%">完成时间</th>
+                    <th style="width:7%">负责人</th>
+                    <th style="width:10%">确认人</th>
+                    <th style="width:12%">状态</th>
+                    <th style="width:5%">确认</th>
+                </tr>
+                </thead>
+                <tbody>
+                    % for key in parm_data:
+                    <tr>
+                        <td rowspan="${len(key[1])|h}">
+                            ${key[0]|h}
+                            <div id='${key[0]|h}'>
+                                <label style="cursor:pointer;margin-top: 5px;"><input type="checkbox" name="all_w" value="${key[1][0]['step_xh']|h},${len(key[1])|h}"/>&nbsp;全部完成&nbsp;&nbsp;&nbsp;</label>
+                                <label style="cursor:pointer;margin-top: 5px;"><input type="checkbox" name="all_b" value="${key[1][0]['step_xh']|h},${len(key[1])|h}"/>&nbsp;全部不涉及</label>
+                            </div>
+                        </td>
+                    % for j in range(0,len(key[1])):
+                    % if j!=0:
+                        <tr >
+                    % endif
+                        <td style="${'text-decoration:line-through;' if key[1][j]['stat']==1 else ''}${'color:red;' if key[1][j]['stat']==2 else ''}${'color:blue;' if key[1][j]['stat']==3 else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}" title='${key[0]|h}'>${key[1][j]['step_xh']|h}</td>
+                        <td style="text-align: left;${'text-decoration:line-through;' if key[1][j]['stat']==1 else ''} ${'color:red;' if key[1][j]['stat']==2 else ''}${'color:blue;' if key[1][j]['stat']==3 else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]["operate_attention"]|h}</td>
+                        <td style="text-align: left;${'text-decoration:line-through;' if key[1][j]['stat']==1 else ''} ${'color:red;' if key[1][j]['stat']==2 else ''}${'color:blue;' if key[1][j]['stat']==3 else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]["comment"]}<font color="red"> ${key[1][j]["confirm_info"]}</font></td>
+                        <td style="${'text-decoration:line-through;' if key[1][j]['stat']==1 else ''} ${'color:red;' if key[1][j]['stat']==2 else ''}${'color:blue;' if key[1][j]['stat']==3 else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]['done_time'] if key[1][j]['operation'] else ''|h}</td>
+                        <td style="${'text-decoration:line-through;' if key[1][j]['stat']==1 else ''} ${'color:red;' if key[1][j]['stat']==2 else ''}${'color:blue;' if key[1][j]['stat']==3 else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]['responser']|h}</td>
+                        <td style="${'text-decoration:line-through;' if key[1][j]['stat']==1 else ''} ${'color:red;' if key[1][j]['stat']==2 else ''}${'color:blue;' if key[1][j]['stat']==3 else ''}${'background-color:Orange;' if key[1][j].has_key('importance') and key[1][j]['importance']==1 else ''}">${key[1][j]['confirm_user']}</td>
+                    % if key[1][j]['operation']==u'完成':
+                        <td style="color: green">
+                            完成
+                        </td>
+                        <td></td>
+                    % elif key[1][j]['operation']==u'不涉及':
+                        <td style="text-decoration:line-through;">
+                            不涉及
+                        </td>
+                        <td></td>
+                    % else:
+                         <td>
+                            <label style="cursor:pointer"><input type="checkbox" name="w" value="${key[1][j]['step_xh']|h}"/>&nbsp;完成&nbsp;&nbsp;&nbsp;</label>  
+                            <label style="cursor:pointer;"><input type="checkbox" name="b" value="${key[1][j]['step_xh']|h}"/>&nbsp;不涉及</label>
+                          </td>
+                         <td>
+                            <a title="确认" type='button' class="king-btn-demo king-btn king-btn-icon king-default"><i class="glyphicon glyphicon-saved"></i></a>
+                        </td>
+                    % endif
+                    </tr>
+                    % endfor
+                    % endfor
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h3 class="modal-title" id="myModalLabel">强制确认</h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <div class="alert alert-info">
+                            <p style="line-height: 22px;" class="mt5">
+                                <span>注意事项</span>
+                                <span style="margin-left:7px">1、强制确认：该任务可操作者代替本步骤的确认责任人，完成确认。</span><br/>
+                            <p style="margin-left: 67px;"><span>2、此处填写的确认信息会追加到选中的每一个步骤序号的备注后面，<span class="t_red">以红色字体标识！</span>  </span>
+
+                            </p>
+                        </div>
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-sm-3" >提示</label>
+                                <div class="col-sm-7">
+                                <label style="color: red;text-align: left"
+                                       id="conf_tips"></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3" for="confirm_info bg">确认信息</label>
+                                <div class="col-sm-7">
+                                    <input type="hidden" id="hide_step" value=""/>
+                                    <textarea class="form-control" id="confirm_info" name="confirm_info" rows="4"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                            <div class="control-label col-sm-3"></div>
+                            <div class="col-sm-7" style="height:31px">
+                              <p class="message_m" name="state_m" style="width:320px;color:red;"></p>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer t_c">
+                        <button type="button" class="king-btn  king-primary king-btn" id="force_confirm">确认</button>
+                        <button type="button" class="king-btn  king-default king-btn" data-dismiss="modal">关闭</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+        <div style="clear: both;">
+        </div>
+    </div>
+<script type="text/javascript">
+    //checkbox
+    $('input').iCheck({
+        checkboxClass: 'icheckbox_minimal-grey',
+      });
+    var template_name = '${instance["template_name"]|h}';
+    var business_name = '${instance["name"]|h}';
+    var handle = '${request.user.username|h}';
+    try{
+        var last = ${parm_data[-1][1][-1]["step_xh"]};
+    }
+    catch(e){
+        var last=1;
+    }
+    $('input').on('ifClicked', function(event){
+        t = event.currentTarget;
+        if (t.name=='w'){          
+            $(t.parentElement.parentElement.nextElementSibling.childNodes[0].childNodes[0]).iCheck('uncheck');
+        }else if (t.name=='b'){
+            $(t.parentElement.parentElement.previousElementSibling.childNodes[0].childNodes[0]).iCheck('uncheck');
+      }else if (t.name=='all_w'){
+        $(t.parentElement.parentElement.parentNode.children[1].childNodes[0].childNodes[0]).iCheck('uncheck');
+        step = t.value.split(',');
+        step_l=parseInt(step[0]);
+        step_t=parseInt(step[1]);
+        var flag = t.checked?'uncheck':'check';
+        for(var i=0;i<step_t;i++){
+            check = $("input[value="+(i+step_l)+"]");
+            if(check.length>0){
+                $(check[0]).iCheck(flag);
+                $(check[1]).iCheck('uncheck');
+            }
+        }
+      }else if (t.name=='all_b'){
+             $(t.parentElement.parentElement.parentNode.children[0].childNodes[0].childNodes[0]).iCheck('uncheck');
+            step = t.value.split(',');
+            console.log(step);
+            step_l=parseInt(step[0]);
+            step_t=parseInt(step[1]);
+            var flag = t.checked?'uncheck':'check';
+            for(var i=0;i<step_t;i++){
+                check = $("input[value="+(i+step_l)+"]");
+                if(check.length>0){
+                    $(check[1]).iCheck(flag);
+                    $(check[0]).iCheck('uncheck');
+                }
+            }
+        }
+    });
+    function get_unchecked_step(){
+        var step_list='';
+        for (var i=1;i<=last;i++){
+            if($("input[value="+i+"]").length>0){
+                step_list+=i.toString()+';';
+            }
+        }
+        return step_list;
+    }
+    function link() {
+        $.ajax({  　　　　　　　　　　//jQuery的AJAX执行的配置对象
+            type: "POST",　　　　　　//设置请求方式，默认为GET，
+            async: true,　　　　　　//设置是否异步，默认为异步
+            data: {business_name:business_name, template_name: template_name, current: get_unchecked_step()},
+            url: site_url + "business/check_msg/",
+            dataType: "json",　　　　//设置期望的返回格式，因服务器返回json格式，这里将数据作为json格式对待
+            success: function (data) {
+                if (data.result) {
+                    show_msg(data.msg, 2);
+                    update(data.dict);
+                    // window.location.reload(true);
+                }
+                link();
+            },
+            error: function (e, data, code) {
+                //连接已断开，提示是否重新连接
+                //show_msg("连接断开,请刷新页面",4);
+            }
+        });
+    }
+    setTimeout(link(), 5000);
+    //执行ajax请求。
+    $("#force_confirm").click(function () {
+        var xh = $("#hide_step").val();
+        document.getElementById('confirm_info').style.borderColor = "#aaa";
+        if (!$("#confirm_info").val()){
+            document.getElementById('confirm_info').style.borderColor = "red";
+            $('.message_m').text("确认信息不能为空！");
+            return;
+        }
+        if (xh.indexOf(';')==-1){
+            var name = $("input[value="+xh+"]").not("input:checked").attr("name");
+            var data = {};
+            data[xh] = name == 'b';
+            $.ajax({
+                url: site_url + 'business/save_actions/',
+                type: "POST",
+                dataType: "json",
+                data: {"operate":JSON.stringify(data), "template_name": template_name, "business_name": business_name, "csrfmiddlewaretoken": getCookie('csrftoken'), "force_msg": $("#confirm_info").val()},
+                success: function (data) {
+                    if (data.result) {
+                        show_msg(data.msg, 2);
+                        $('#myModal').modal('hide');
+                        window.location.reload(true);
+                    }else{
+                        show_msg(data.msg, 4);
+                    }
+                }
+            })
+        }else{
+            confirm_all($("#confirm_info").val(), true);
+        }
+    });
+    //刷新步骤状态
+    function hide(){
+        $.get("${SITE_URL}business/steps_status_get/",
+            {"template_name": template_name, "business_name": business_name},
+            function(data){
+                if(data.result){
+                    for (i=0;i<data.data_list.length;i++){
+                        try{
+                        if(data.data_list[i].flag){
+                            $('#'+data.data_list[i].name)[0].removeAttribute("hidden");
+                        }else{
+                            $('#'+data.data_list[i].name)[0].setAttribute("hidden",true);
+                        }
+                    }catch(e){
+                    }
+                        finally{}
+                    }
+                } 
+            }
+        );
+    }
+    function update(data) {
+        for(var i=0;i<data.length;i++){
+            xh_=data[i].step_xh;
+            var tds = $("input[value=" + xh_ + "]").parent().parent().parent().siblings();
+            if (tds.eq(-1).attr('class')!=''){
+                tds.eq(-2).text("");
+                tds.eq(-3).html(data[i].confirm_user);
+                tds.eq(-5).text(data[i].done_time);
+                tds.eq(-6).html(data[i].comment);
+            }
+            else{
+                tds.eq(-1).text("");
+                tds.eq(-2).html(data[i].confirm_user);
+                tds.eq(-4).text(data[i].done_time);
+                tds.eq(-5).html(data[i].comment);
+            }
+            $("input[value=" + xh_ + "]").parent().parent().parent().html(data[i].operation == '完成' ? "<span style='color: green'>完成</span>" : "<span style='text-decoration:line-through;'>不涉及</span>")
+        }
+        hide();
+    }
+
+    $("a[type=button]").click(function () {
+        var xh = parseInt($(this).parent().siblings().eq(-7).text());//当前序号
+        var val_list = $("input:checkbox").not("input:checked");
+        i=0;
+        while(i<val_list.length){
+            if (val_list[i].name.indexOf('all')!=-1){
+                val_list.splice(i, 1);
+            }else{
+                i++;
+            }
+        }
+        var val = val_list.first().parent().parent().parent().siblings()[0].title; //第一个未选中的checkbox所属步骤
+        if (val==''){
+                    val=val_list.first().parent().parent().parent().siblings()[1].title;//每个step的第一个detail
+                }
+        if (!$(this).parent().prev().children()[0].children[0].children[0].checked && 
+            !$(this).parent().prev().children()[1].children[0].children[0].checked) {
+            show_msg("请选择完成或不涉及", 4);
+            return
+        }else{
+            var select_index = $(this).parent().siblings()[0].title;//当前选中的value所属步骤
+            if (select_index==''){
+                select_index = $(this).parent().siblings()[1].title;
+            }
+        }
+        if (select_index != val) { //前面还有为完成的步骤
+            show_msg("请先完成前面的步骤", 4);
+            return;
+        }
+        //需强制确认
+        if ($.inArray(handle, $(this).parent().siblings().eq(-3).text().split(';')) == -1) {
+            $("#conf_tips").text("步骤[" + xh + "]非当前用户负责,需强制确认");
+            $("#hide_step").val(xh);
+            document.getElementById('confirm_info').style.borderColor = "#aaa";
+            $('.message_m').text('');
+            $("#confirm_info").val('');
+            $('#myModal').modal({backdrop: 'static', keyboard: false});
+            return;
+        }
+        //直接确认
+        var name = '';
+        if ($(this).parent().prev().children()[0].children[0].children[0].checked){
+            name = 'w';
+        }
+        if ($(this).parent().prev().children()[1].children[0].children[0].checked){
+            name = 'b';
+        }
+        var data = {};
+        data[xh] = name == 'w';
+        $.ajax({
+            url: site_url + 'business/save_actions/',
+            type: "POST",
+            dataType: "json",
+            data: {"operate":JSON.stringify(data), "template_name": template_name, "business_name": business_name, "csrfmiddlewaretoken": getCookie('csrftoken'), "force_msg": ''},
+            success: function (data) {
+                if (data.result) {
+                    show_msg(data.msg, 2);
+                    window.location.reload(true);
+                }
+                else {
+                    show_msg(data.msg, 4);
+                    if (data.reload) {
+                        window.location.reload(true);
+                    }
+                }
+            }
+        })
+    });
+    function confirm_all(msg, force){
+        var checked_list=$("input:checked");
+        var i=0;
+        var confirm_users={};
+        var operate={};
+        var flag=false;
+        var xh='';
+        for(i=0;i<checked_list.length;i++){
+            if (checked_list[i].name.indexOf('all')==-1){
+                step=checked_list[i].value;
+                operate[step]=checked_list[i].name=='w';
+                confirm_users[step]=$(checked_list[i].parentElement.parentElement.parentElement.previousElementSibling.previousElementSibling).text();
+                if ($.inArray(handle, confirm_users[step].split(';'))==-1){
+                    flag = true;
+                    xh+=step+';'
+                }
+            }
+        }
+        if ($.isEmptyObject(operate)){
+            show_msg("请选择完成或不涉及的步骤！", 4);
+            return 
+        }
+        if (!flag || force){
+           $.ajax({
+                url: site_url + 'business/save_actions/',
+                type: "POST",
+                dataType: "json",
+                data: {"confirm_users": JSON.stringify(confirm_users), "operate":JSON.stringify(operate), "template_name": template_name, "business_name": business_name, "csrfmiddlewaretoken": getCookie('csrftoken'), "force_msg": msg},
+                success: function (data) {
+                    if (data.result) {
+                        show_msg(data.msg, 2);
+                        window.location.reload(true);
+                    }
+                    else {
+                        show_msg(data.msg, 4);
+                        if (data.reload) {
+                            window.location.reload(true);
+                        }
+                    }
+                }
+            })
+        }else{
+            $("#conf_tips").text("步骤[" + xh + "]非当前用户负责,需强制确认");
+            $("#hide_step").val(xh);
+            document.getElementById('confirm_info').style.borderColor = "#aaa";
+            $('.message_m').text('');
+            $('#myModal').modal({backdrop: 'static', keyboard: false});
+            return 
+        }
+    }
+    hide();
+</script>
+</%block>
+
