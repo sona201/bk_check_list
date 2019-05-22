@@ -1,6 +1,6 @@
 *.pyc
 *.py~
 *.html~
-conf
+env_local
 .idea
 1.8
